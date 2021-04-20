@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     Module *mod;
 
     int c;
-    // Getopt keeps this easily expandable for the future
+    // Get-opt keeps this easily expandable for the future
     while ((c = getopt(argc, argv, "o:?")) != -1) {
         switch (c) {
             case 'o':
@@ -61,23 +61,39 @@ void writeModule(Module *module, char *outfile) {
 
 }
 
-void print_usage(char *arg0) {
-    printf("usage: %s [-o <outfile>] <infile>\n", arg0);
+
+/**************************************************************/
+/** CONVERSION METHODS */
+/**************************************************************/
+
+uint32_t read4FromEco(unsigned char *p) {
+    return (uint32_t) p[0] << 24 |
+           (uint32_t) p[1] << 16 |
+           (uint32_t) p[2] <<  8 |
+           (uint32_t) p[3] <<  0;
+}
+
+
+void write4ToEco(unsigned char *p, uint32_t data) {
+    p[0] = data >> 24;
+    p[1] = data >> 16;
+    p[2] = data >>  8;
+    p[3] = data >>  0;
 }
 
 
 void conv4FromEcoToNative(unsigned char *p) {
-    unsigned int data;
+    uint32_t data;
 
     data = read4FromEco(p);
-    * (unsigned int *) p = data;
+    * (uint32_t *) p = data;
 }
 
 
 void conv4FromNativeToEco(unsigned char *p) {
-    unsigned int data;
+    uint32_t data;
 
-    data = * (unsigned int *) p;
+    data = * (uint32_t *) p;
     write4ToEco(p, data);
 }
 

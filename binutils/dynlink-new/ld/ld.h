@@ -6,6 +6,7 @@
 #define ECO32_LD_H
 
 
+#include <stdint.h>
 
 #define DEFAULT_OUT_FILE_NAME "a.out"
 
@@ -61,5 +62,14 @@ typedef struct reloc {
 Module *readModule(char *infile);
 void writeModule(Module *module, char *outfile);
 void print_usage(char *arg0);
+
+
+/**************************************************************/
+
+
+uint32_t read4FromEco(unsigned char *p);
+void write4ToEco(unsigned char *p, uint32_t data);
+void conv4FromEcoToNative(unsigned char *p);
+void conv4FromNativeToEco(unsigned char *p);
 
 #endif //ECO32_LD_H
