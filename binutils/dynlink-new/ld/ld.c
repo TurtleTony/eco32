@@ -3,13 +3,6 @@
  * Created by tony on 20.04.21.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <ctype.h>
-#include <unistd.h>
-
-#include "eof.h"
 #include "ld.h"
 
 int main(int argc, char *argv[]) {

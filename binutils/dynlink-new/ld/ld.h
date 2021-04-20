@@ -7,6 +7,13 @@
 
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <unistd.h>
+
+#include "eof.h"
 
 #define DEFAULT_OUT_FILE_NAME "a.out"
 
