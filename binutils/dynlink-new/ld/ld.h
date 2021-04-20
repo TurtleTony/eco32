@@ -61,7 +61,7 @@ typedef struct reloc {
 
 Module *readModule(char *infile);
 void writeModule(Module *module, char *outfile);
-void print_usage(char *arg0);
+void printUsage(char *arg0);
 
 
 /**************************************************************/
