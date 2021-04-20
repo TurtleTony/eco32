@@ -15,6 +15,8 @@ int main(int argc, char *argv[]) {
     char *infile = NULL;
     char *outfile = DEFAULT_OUT_FILE_NAME;
 
+    Module *mod;
+
     int c;
     // Getopt keeps this easily expandable for the future
     while ((c = getopt(argc, argv, "o:?")) != -1) {
@@ -38,8 +40,17 @@ int main(int argc, char *argv[]) {
 
     infile = argv[optind];
 
-    printf("Hello World!\n");
+    mod = readModule(infile);
+    writeModule(mod, outfile);
     return 0;
+}
+
+Module *readModule(char *infile) {
+    return NULL;
+}
+
+void writeModule(Module *module, char *outfile) {
+
 }
 
 void print_usage(char *arg0) {
