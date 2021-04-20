@@ -45,6 +45,14 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+void print_usage(char *arg0) {
+    printf("usage: %s [-o <outfile>] <infile>\n", arg0);
+}
+
+
+/**************************************************************/
+
+
 Module *readModule(char *infile) {
     return NULL;
 }
@@ -56,3 +64,23 @@ void writeModule(Module *module, char *outfile) {
 void print_usage(char *arg0) {
     printf("usage: %s [-o <outfile>] <infile>\n", arg0);
 }
+
+
+void conv4FromEcoToNative(unsigned char *p) {
+    unsigned int data;
+
+    data = read4FromEco(p);
+    * (unsigned int *) p = data;
+}
+
+
+void conv4FromNativeToEco(unsigned char *p) {
+    unsigned int data;
+
+    data = * (unsigned int *) p;
+    write4ToEco(p, data);
+}
+
+
+/**************************************************************/
+

@@ -54,6 +54,10 @@ typedef struct reloc {
     int add;			/* additive part of value */
 } Reloc;
 
+
+/**************************************************************/
+
+
 Module *readModule(char *infile);
 void writeModule(Module *module, char *outfile);
 void print_usage(char *arg0);
