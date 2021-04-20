@@ -4,6 +4,8 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include <unistd.h>
 
@@ -55,11 +57,68 @@ void printUsage(char *arg0) {
     printf("usage: %s [-o <outfile>] <infile>\n", arg0);
 }
 
+void error(char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    fprintf(stderr, "error: ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "!\n");
+    va_end(ap);
+    exit(1);
+}
+
+void *safeAlloc(unsigned int size) {
+    void *p;
+
+    p = malloc(size);
+    if (p == NULL) {
+        error("unable to allocate %d bytes", size);
+    }
+    return p;
+}
+
+
+void *safeFree(void *p) {
+    if (p == NULL) {
+        error("tried to free NULL pointer");
+    }
+    free(p);
+}
+
+
+/**************************************************************/
+
+
+Module *newModule(char *name) {
+    Module *mod;
+
+    mod = safeAlloc(sizeof(Module));
+    mod->name = name;
+    mod->data = NULL;
+    mod->strs = NULL;
+    mod->nsegs = 0;
+    mod->segs = NULL;
+    mod->nsyms = 0;
+    mod->syms = NULL;
+    mod->nrels = 0;
+    mod->rels = NULL;
+    return mod;
+}
+
 
 /**************************************************************/
 
 
 Module *readModule(char *infile) {
+    FILE *inFile;
+    EofHeader hdr;
+    Module *mod;
+
+    inFile = fopen(infile, "r");
+    if (inFile == NULL) {
+        error("cannot open input file '%s'", infile);
+    }
     return NULL;
 }
 
