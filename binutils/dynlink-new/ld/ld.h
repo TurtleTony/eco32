@@ -9,6 +9,6 @@
 
 #define DEFAULT_OUT_FILE_NAME "a.out"
 
-void print_usage(void);
+void print_usage(char *arg0);
 
 #endif //ECO32_LD_H

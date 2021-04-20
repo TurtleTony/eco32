@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
                 outfile = optarg;
                 break;
             case '?':
-                print_usage();
+                print_usage(argv[0]);
                 return 1;
             default:
                 return 1;
@@ -31,7 +31,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (optind >= argc) {
-        print_usage();
+        // Require an additional option for the infile
+        print_usage(argv[0]);
         return 1;
     }
 
@@ -41,6 +42,6 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void print_usage(void) {
-    printf("usage: ./ld [-o <outfile>] <infile>\n");
+void print_usage(char *arg0) {
+    printf("usage: %s [-o <outfile>] <infile>\n", arg0);
 }
