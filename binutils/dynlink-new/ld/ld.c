@@ -103,20 +103,108 @@ Module *newModule(char *name) {
 /**************************************************************/
 
 
-Module *readModule(char *infile) {
-    FILE *inFile;
+Module *readModule(char *inputPath) {
+    FILE *inputFile;
     EofHeader hdr;
     Module *mod;
 
-    inFile = fopen(infile, "r");
-    if (inFile == NULL) {
-        error("cannot open input file '%s'", infile);
+    inputFile = fopen(inputPath, "r");
+    if (inputFile == NULL) {
+        error("cannot open input file '%s'", inputPath);
     }
+
+    parseHeader(&hdr, inputFile, inputPath);
+    mod = newModule(inputPath);
+    parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
+
+    /** TODO:
+     * Parse segment table
+     * Parse symbol table
+     * Parse relocation table
+     * Parse string space
+     * Parse segment data
+     * Close file
+    */
+
+    fclose(inputFile);
     return NULL;
 }
 
-void writeModule(Module *module, char *outfile) {
+void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath) {
+    if (fseek(inputFile, 0, SEEK_SET) != 0) {
+        error("cannot seek in header in input file '%s'", inputPath);
+    }
+    if (fread(hdr, sizeof(EofHeader), 1, inputFile) != 1) {
+        error("cannot read header in input file '%s'", inputPath);
+    }
+    conv4FromEcoToNative((unsigned char *) &hdr->magic);
+    conv4FromEcoToNative((unsigned char *) &hdr->osegs);
+    conv4FromEcoToNative((unsigned char *) &hdr->nsegs);
+    conv4FromEcoToNative((unsigned char *) &hdr->osyms);
+    conv4FromEcoToNative((unsigned char *) &hdr->nsyms);
+    conv4FromEcoToNative((unsigned char *) &hdr->orels);
+    conv4FromEcoToNative((unsigned char *) &hdr->nrels);
+    conv4FromEcoToNative((unsigned char *) &hdr->odata);
+    conv4FromEcoToNative((unsigned char *) &hdr->sdata);
+    conv4FromEcoToNative((unsigned char *) &hdr->ostrs);
+    conv4FromEcoToNative((unsigned char *) &hdr->sstrs);
+    conv4FromEcoToNative((unsigned char *) &hdr->entry);
+    if (hdr->magic != EOF_MAGIC) {
+        error("wrong magic number in input file '%s'", inputPath);
+    }
+}
 
+void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath){
+    Segment *seg;
+    SegmentRecord segmentRecord;
+
+    module->nsegs = nsegs;
+    module->segs = safeAlloc(nsegs * sizeof(Segment));
+
+    if (fseek(inputFile, osegs, SEEK_SET) != 0) {
+        error("cannot seek segment table in input file '%s'", inputPath);
+    }
+
+    for(int i = 0; i < nsegs; i++) {
+        seg = &module->segs[i];
+        if (fread(&segmentRecord, sizeof(SegmentRecord), 1, inputFile) != 1) {
+            error("cannot read segment %d in input file '%s'", i, inputPath);
+        }
+        conv4FromEcoToNative((unsigned char *) &segmentRecord.name);
+        conv4FromEcoToNative((unsigned char *) &segmentRecord.offs);
+        conv4FromEcoToNative((unsigned char *) &segmentRecord.addr);
+        conv4FromEcoToNative((unsigned char *) &segmentRecord.size);
+        conv4FromEcoToNative((unsigned char *) &segmentRecord.attr);
+        seg->name = module->strs + segmentRecord.name;
+        seg->data = module->data + segmentRecord.offs;
+        seg->addr = segmentRecord.addr;
+        seg->size = segmentRecord.size;
+        seg->attr = segmentRecord.attr;
+    }
+}
+
+
+
+
+void writeModule(Module *module, char *outputPath) {
+    FILE *outputFile;
+
+    outputFile = fopen(outputPath, "w");
+    if (outputFile == NULL) {
+        error("cannot open output file '%s'", outputPath);
+    }
+
+    /** TODO :
+     *  Open output file
+     *  Write Header
+     *  Write Data
+     *  Write Strings
+     *  Write Symbols
+     *  Write Relocs
+     *  Write Final Header
+    */
+
+     fclose(outputFile);
 }
 
 

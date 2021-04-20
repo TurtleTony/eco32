@@ -65,11 +65,15 @@ typedef struct reloc {
 
 /**************************************************************/
 
-
-Module *readModule(char *infile);
 Module *newModule(char *name);
-void writeModule(Module *module, char *outfile);
+Module *readModule(char *inputPath);
 
+void writeModule(Module *module, char *outputPath);
+
+/**************************************************************/
+
+void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
+void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath);
 
 /**************************************************************/
 
