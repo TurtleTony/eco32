@@ -77,7 +77,7 @@ void writeModule(Module *module, char *outfile);
 void printUsage(char *arg0);
 void error(char *fmt, ...);
 void *safeAlloc(unsigned int size);
-void *safeFree(void *p);
+void safeFree(void *p);
 
 
 /**************************************************************/

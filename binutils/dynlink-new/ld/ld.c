@@ -72,7 +72,7 @@ void *safeAlloc(unsigned int size) {
 }
 
 
-void *safeFree(void *p) {
+void safeFree(void *p) {
     if (p == NULL) {
         error("tried to free NULL pointer");
     }
