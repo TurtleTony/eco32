@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <ctype.h>
 #include <unistd.h>
 
@@ -69,6 +70,7 @@ typedef struct reloc {
 
 Module *newModule(char *name);
 Module *readModule(char *inputPath);
+void writeModule(Module *module, char *outputPath);
 
 
 /**************************************************************/
@@ -86,7 +88,15 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 /**************************************************************/
 
 
-void writeModule(Module *module, char *outputPath);
+void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeData(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeStrings(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+
+void writeSegments(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeSymbols(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeRelocations(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+
+void writeFinalHeader(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
 
 /**************************************************************/
