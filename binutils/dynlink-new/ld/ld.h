@@ -29,6 +29,7 @@ typedef struct module {
     struct reloc *rels;		/* array of relocations */
 } Module;
 
+
 typedef struct segment {
     char *name;			/* segment name */
     unsigned char *data;		/* segment data */
@@ -69,8 +70,6 @@ typedef struct reloc {
 Module *newModule(char *name);
 Module *readModule(char *inputPath);
 
-void writeModule(Module *module, char *outputPath);
-
 
 /**************************************************************/
 
@@ -82,6 +81,12 @@ void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *
 void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath);
 void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath);
 void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath);
+
+
+/**************************************************************/
+
+
+void writeModule(Module *module, char *outputPath);
 
 
 /**************************************************************/
