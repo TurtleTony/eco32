@@ -50,6 +50,7 @@ void printUsage(char *arg0) {
     printf("usage: %s [-o <outfile>] <infile>\n", arg0);
 }
 
+
 void error(char *fmt, ...) {
     va_list ap;
 
@@ -60,6 +61,7 @@ void error(char *fmt, ...) {
     va_end(ap);
     exit(1);
 }
+
 
 void *safeAlloc(unsigned int size) {
     void *p;
@@ -128,6 +130,7 @@ Module *readModule(char *inputPath) {
     return NULL;
 }
 
+
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath) {
     if (fseek(inputFile, 0, SEEK_SET) != 0) {
         error("cannot seek header in input file '%s'", inputPath);
@@ -152,6 +155,7 @@ void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath) {
     }
 }
 
+
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath) {
     if (fseek(inputFile, odata, SEEK_SET) != 0) {
         error("cannot seek data space in input file '%s'", inputPath);
@@ -163,6 +167,7 @@ void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inp
         error("cannot read data space in input file '%s'", inputPath);
     }
 }
+
 
 void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath) {
     if (fseek(inputFile, ostrs, SEEK_SET) != 0) {
