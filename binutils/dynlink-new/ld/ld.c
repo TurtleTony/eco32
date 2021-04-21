@@ -122,10 +122,7 @@ Module *readModule(char *inputPath) {
 
     parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
     parseSymbols(mod, hdr.osyms, hdr.nsyms, inputFile, inputPath);
-
-    /** TODO:
-     * Parse relocation table
-    */
+    parseRelocations(mod, hdr.orels, hdr.nrels, inputFile, inputPath);
 
     fclose(inputFile);
     return NULL;
@@ -239,6 +236,37 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *
 }
 
 
+void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath) {
+    Reloc *reloc;
+    RelocRecord relocRecord;
+
+    module->nrels = nrels;
+    module->rels = safeAlloc(nrels * sizeof(Reloc));
+
+    if (fseek(inputFile, orels, SEEK_SET) != 0) {
+        error("cannot seek symbol table in input file '%s'", inputPath);
+    }
+
+    for (int i = 0; i < nrels; i++) {
+        reloc = &module->rels[i];
+        if (fread(&relocRecord, sizeof(RelocRecord), 1, inputFile) != 1) {
+            error("cannot read relocation %d in input file '%s'", i, inputPath);
+        }
+        conv4FromEcoToNative((unsigned char *) &relocRecord.loc);
+        conv4FromEcoToNative((unsigned char *) &relocRecord.seg);
+        conv4FromEcoToNative((unsigned char *) &relocRecord.typ);
+        conv4FromEcoToNative((unsigned char *) &relocRecord.ref);
+        conv4FromEcoToNative((unsigned char *) &relocRecord.add);
+
+        reloc->loc = relocRecord.loc;
+        reloc->seg = relocRecord.seg;
+        reloc->typ = relocRecord.typ;
+        reloc->ref = relocRecord.ref;
+        reloc->add = relocRecord.add;
+    }
+}
+
+
 void writeModule(Module *module, char *outputPath) {
     FILE *outputFile;
 
@@ -264,6 +292,7 @@ void writeModule(Module *module, char *outputPath) {
 /**************************************************************/
 /** CONVERSION METHODS */
 /**************************************************************/
+
 
 uint32_t read4FromEco(unsigned char *p) {
     return (uint32_t) p[0] << 24 |
@@ -298,4 +327,3 @@ void conv4FromNativeToEco(unsigned char *p) {
 
 
 /**************************************************************/
-
