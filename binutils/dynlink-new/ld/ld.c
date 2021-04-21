@@ -180,35 +180,6 @@ void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *
 }
 
 
-void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath) {
-    Symbol *sym;
-    SymbolRecord symbolRecord;
-
-    module->nsyms = nsyms;
-    module->syms = safeAlloc(nsyms * sizeof(Symbol));
-
-    if (fseek(inputFile, osyms, SEEK_SET) != 0) {
-        error("cannot seek symbol table in input file '%s'", inputPath);
-    }
-
-    for (int i = 0; i < nsyms; i++) {
-        sym = &module->syms[i];
-        if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
-            error("cannot read symbol %d in input file '%s'", i, inputPath);
-        }
-        conv4FromEcoToNative((unsigned char *) &symbolRecord.name);
-        conv4FromEcoToNative((unsigned char *) &symbolRecord.val);
-        conv4FromEcoToNative((unsigned char *) &symbolRecord.seg);
-        conv4FromEcoToNative((unsigned char *) &symbolRecord.attr);
-
-        sym->name = module->strs + symbolRecord.name;
-        sym->val = symbolRecord.val;
-        sym->seg = symbolRecord.seg;
-        sym->attr = symbolRecord.attr;
-    }
-}
-
-
 void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath) {
     Segment *seg;
     SegmentRecord segmentRecord;
@@ -235,6 +206,35 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
         seg->addr = segmentRecord.addr;
         seg->size = segmentRecord.size;
         seg->attr = segmentRecord.attr;
+    }
+}
+
+
+void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath) {
+    Symbol *sym;
+    SymbolRecord symbolRecord;
+
+    module->nsyms = nsyms;
+    module->syms = safeAlloc(nsyms * sizeof(Symbol));
+
+    if (fseek(inputFile, osyms, SEEK_SET) != 0) {
+        error("cannot seek symbol table in input file '%s'", inputPath);
+    }
+
+    for (int i = 0; i < nsyms; i++) {
+        sym = &module->syms[i];
+        if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
+            error("cannot read symbol %d in input file '%s'", i, inputPath);
+        }
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.name);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.val);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.seg);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.attr);
+
+        sym->name = module->strs + symbolRecord.name;
+        sym->val = symbolRecord.val;
+        sym->seg = symbolRecord.seg;
+        sym->attr = symbolRecord.attr;
     }
 }
 
