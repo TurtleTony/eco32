@@ -127,7 +127,7 @@ Module *readModule(char *inputPath) {
     parseRelocations(mod, hdr.orels, hdr.nrels, inputFile, inputPath);
 
     fclose(inputFile);
-    return NULL;
+    return mod;
 }
 
 
