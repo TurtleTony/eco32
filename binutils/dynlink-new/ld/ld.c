@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // TODO: turn into loop, parsing multiple input files
     if (optind >= argc) {
         // Require an additional option for the infile
         printUsage(argv[0]);
