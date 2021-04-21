@@ -324,6 +324,3 @@ void conv4FromNativeToEco(unsigned char *p) {
     data = *(uint32_t *) p;
     write4ToEco(p, data);
 }
-
-
-/**************************************************************/
