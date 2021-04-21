@@ -115,15 +115,17 @@ Module *readModule(char *inputPath) {
 
     parseHeader(&hdr, inputFile, inputPath);
     mod = newModule(inputPath);
+
+    // Parse metadata first
+    parseData(mod, hdr.odata, hdr.sdata, inputFile, inputPath);
+    parseStrings(mod, hdr.ostrs, hdr.sstrs, inputFile, inputPath);
+
     parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
 
     /** TODO:
-     * Parse segment table
      * Parse symbol table
      * Parse relocation table
-     * Parse string space
      * Parse segment data
-     * Close file
     */
 
     fclose(inputFile);
@@ -132,7 +134,7 @@ Module *readModule(char *inputPath) {
 
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath) {
     if (fseek(inputFile, 0, SEEK_SET) != 0) {
-        error("cannot seek in header in input file '%s'", inputPath);
+        error("cannot seek header in input file '%s'", inputPath);
     }
     if (fread(hdr, sizeof(EofHeader), 1, inputFile) != 1) {
         error("cannot read header in input file '%s'", inputPath);
@@ -154,7 +156,31 @@ void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath) {
     }
 }
 
-void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath){
+void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath) {
+    if (fseek(inputFile, odata, SEEK_SET) != 0) {
+        error("cannot seek data space in input file '%s'", inputPath);
+    }
+
+    module->data = safeAlloc(sdata);
+
+    if (fread(module->data, sdata, 1, inputFile) != 1) {
+        error("cannot read data space in input file '%s'", inputPath);
+    }
+}
+
+void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath) {
+    if (fseek(inputFile, ostrs, SEEK_SET) != 0) {
+        error("cannot seek string space in input file '%s'", inputPath);
+    }
+
+    module->strs = safeAlloc(sstrs);
+
+    if (fread(module->strs, sstrs, 1, inputFile) != 1) {
+        error("cannot read string space in input file '%s'", inputPath);
+    }
+}
+
+void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath) {
     Segment *seg;
     SegmentRecord segmentRecord;
 
@@ -165,7 +191,7 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
         error("cannot seek segment table in input file '%s'", inputPath);
     }
 
-    for(int i = 0; i < nsegs; i++) {
+    for (int i = 0; i < nsegs; i++) {
         seg = &module->segs[i];
         if (fread(&segmentRecord, sizeof(SegmentRecord), 1, inputFile) != 1) {
             error("cannot read segment %d in input file '%s'", i, inputPath);
@@ -182,8 +208,6 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
         seg->attr = segmentRecord.attr;
     }
 }
-
-
 
 
 void writeModule(Module *module, char *outputPath) {
@@ -204,7 +228,7 @@ void writeModule(Module *module, char *outputPath) {
      *  Write Final Header
     */
 
-     fclose(outputFile);
+    fclose(outputFile);
 }
 
 
