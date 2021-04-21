@@ -121,11 +121,10 @@ Module *readModule(char *inputPath) {
     parseStrings(mod, hdr.ostrs, hdr.sstrs, inputFile, inputPath);
 
     parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
+    parseSymbols(mod, hdr.osyms, hdr.nsyms, inputFile, inputPath);
 
     /** TODO:
-     * Parse symbol table
      * Parse relocation table
-     * Parse segment data
     */
 
     fclose(inputFile);
@@ -179,6 +178,36 @@ void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *
         error("cannot read string space in input file '%s'", inputPath);
     }
 }
+
+
+void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath) {
+    Symbol *sym;
+    SymbolRecord symbolRecord;
+
+    module->nsyms = nsyms;
+    module->syms = safeAlloc(nsyms * sizeof(Symbol));
+
+    if (fseek(inputFile, osyms, SEEK_SET) != 0) {
+        error("cannot seek symbol table in input file '%s'", inputPath);
+    }
+
+    for (int i = 0; i < nsyms; i++) {
+        sym = &module->syms[i];
+        if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
+            error("cannot read symbol %d in input file '%s'", i, inputPath);
+        }
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.name);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.val);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.seg);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.attr);
+
+        sym->name = module->strs + symbolRecord.name;
+        sym->val = symbolRecord.val;
+        sym->seg = symbolRecord.seg;
+        sym->attr = symbolRecord.attr;
+    }
+}
+
 
 void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath) {
     Segment *seg;

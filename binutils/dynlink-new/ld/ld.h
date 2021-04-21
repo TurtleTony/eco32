@@ -75,7 +75,9 @@ void writeModule(Module *module, char *outputPath);
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);
 void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
+
 void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath);
+void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath);
 
 /**************************************************************/
 
