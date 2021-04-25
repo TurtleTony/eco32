@@ -66,7 +66,7 @@ typedef struct reloc {
 
 
 /**************************************************************/
-
+/** Module methods **/
 
 Module *newModule(char *name);
 Module *readModule(char *inputPath);
@@ -74,7 +74,7 @@ void writeModule(Module *module, char *outputPath);
 
 
 /**************************************************************/
-
+/** Parsing input object file **/
 
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);
@@ -84,9 +84,8 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
 void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath);
 void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath);
 
-
 /**************************************************************/
-
+/** Writing output object file **/
 
 void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 void writeData(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
@@ -100,7 +99,7 @@ void writeFinalHeader(Module *module, EofHeader *outFileHeader, unsigned int *ou
 
 
 /**************************************************************/
-
+/** Helper methods **/
 
 void printUsage(char *arg0);
 void error(char *fmt, ...);
@@ -109,7 +108,7 @@ void safeFree(void *p);
 
 
 /**************************************************************/
-
+/** ECO32 converter methods **/
 
 uint32_t read4FromEco(unsigned char *p);
 void write4ToEco(unsigned char *p, uint32_t data);
