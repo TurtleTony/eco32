@@ -297,7 +297,7 @@ void writeModule(Module *module, char *outputPath) {
     writeSymbols(module, &outFileHeader, &outFileOffset, outputFile, outputPath);
     writeRelocations(module, &outFileHeader, &outFileOffset, outputFile, outputPath);
 
-    writeFinalHeader(module, &outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeFinalHeader(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
     fclose(outputFile);
 }
@@ -459,7 +459,7 @@ void writeRelocations(Module *module, EofHeader *outFileHeader, unsigned int *ou
 }
 
 
-void writeFinalHeader(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
+void writeFinalHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                       char *outputPath) {
     if (fseek(outputFile, 0, SEEK_SET) != 0) {
         error("cannot seek final header in file '%s'", outputPath);

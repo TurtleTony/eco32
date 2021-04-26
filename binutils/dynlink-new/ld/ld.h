@@ -95,7 +95,7 @@ void writeSegments(Module *module, EofHeader *outFileHeader, unsigned int *outFi
 void writeSymbols(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 void writeRelocations(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
-void writeFinalHeader(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeFinalHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
 
 /**************************************************************/
