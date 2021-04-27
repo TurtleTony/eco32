@@ -9,7 +9,7 @@ CFLAGS = -g -Wall -I../../dynlink/ex02/include
 LDFLAGS = -g
 LDLIBS = -lm
 
-SRCS = ld.c
+SRCS = ld.c ecoEndian.c eofHandler.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 BIN = ld
 

@@ -6,113 +6,18 @@
 #define ECO32_LD_H
 
 
-#include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 #include <unistd.h>
 
-#include "eof.h"
-
-#define DEFAULT_OUT_FILE_NAME "a.out"
-
-typedef struct module {
-    char *name;			/* module name */
-    unsigned char *data;		/* data space */
-    char *strs;			/* string space */
-    int nsegs;			/* number of segments */
-    struct segment *segs;		/* array of segments */
-    int nsyms;			/* number of symbols */
-    struct symbol *syms;		/* array of symbols */
-    int nrels;			/* number of relocations */
-    struct reloc *rels;		/* array of relocations */
-} Module;
-
-
-typedef struct segment {
-    char *name;			/* segment name */
-    unsigned char *data;		/* segment data */
-    unsigned int addr;		/* virtual start address */
-    unsigned int size;		/* size of segment in bytes */
-    unsigned int attr;		/* segment attributes */
-    /* used for output only */
-    unsigned int nameOffs;	/* offset in string space */
-    unsigned int dataOffs;	/* offset in segment data */
-} Segment;
-
-
-typedef struct symbol {
-    char *name;			/* symbol name */
-    int val;			/* the symbol's value */
-    int seg;			/* the symbol's segment, -1: absolute */
-    unsigned int attr;		/* symbol attributes */
-    /* used for output only */
-    unsigned int nameOffs;	/* offset in string space */
-} Symbol;
-
-
-typedef struct reloc {
-    unsigned int loc;		/* where to relocate */
-    int seg;			/* in which segment */
-    int typ;			/* relocation type: one of RELOC_xxx */
-    /* symbol flag RELOC_SYM may be set */
-    int ref;			/* what is referenced */
-    /* if symbol flag = 0: segment number */
-    /* if symbol flag = 1: symbol number */
-    int add;			/* additive part of value */
-} Reloc;
-
-
-/**************************************************************/
-/** Module methods **/
-
-Module *newModule(char *name);
-Module *readModule(char *inputPath);
-void writeModule(Module *module, char *outputPath);
-
-
-/**************************************************************/
-/** Parsing input object file **/
-
-void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
-void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);
-void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
-
-void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath);
-void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath);
-void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath);
-
-/**************************************************************/
-/** Writing output object file **/
-
-void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeData(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeStrings(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-
-void writeSegments(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeSymbols(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeRelocations(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-
-void writeFinalHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-
-
-/**************************************************************/
-/** Helper methods **/
+#include "eofHandler.h"
 
 void printUsage(char *arg0);
 void error(char *fmt, ...);
 void *safeAlloc(unsigned int size);
 void safeFree(void *p);
 
-
-/**************************************************************/
-/** ECO32 converter methods **/
-
-uint32_t read4FromEco(unsigned char *p);
-void write4ToEco(unsigned char *p, uint32_t data);
-void conv4FromEcoToNative(unsigned char *p);
-void conv4FromNativeToEco(unsigned char *p);
 
 #endif //ECO32_LD_H
