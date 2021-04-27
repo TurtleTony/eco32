@@ -14,6 +14,11 @@
 
 #include "eofHandler.h"
 
+
+/**************************************************************/
+/** Helper methods **/
+
+
 void printUsage(char *arg0);
 void error(char *fmt, ...);
 void *safeAlloc(unsigned int size);

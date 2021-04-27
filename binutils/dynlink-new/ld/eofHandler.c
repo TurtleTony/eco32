@@ -22,6 +22,8 @@ Module *newModule(char *name) {
 
 
 /**************************************************************/
+/** PARSING INPUTFILE **/
+/**************************************************************/
 
 
 Module *readModule(char *inputPath) {
@@ -189,6 +191,11 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
         reloc->add = relocRecord.add;
     }
 }
+
+
+/**************************************************************/
+/** WRITING OUTPUTFILE **/
+/**************************************************************/
 
 
 void writeModule(Module *module, char *outputPath) {

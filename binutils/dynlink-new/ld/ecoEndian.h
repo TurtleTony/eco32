@@ -8,6 +8,11 @@
 
 #include <stdint.h>
 
+
+/**************************************************************/
+/** ECO32 converter methods **/
+
+
 uint32_t read4FromEco(unsigned char *p);
 void write4ToEco(unsigned char *p, uint32_t data);
 void conv4FromEcoToNative(unsigned char *p);

@@ -63,6 +63,7 @@ typedef struct reloc {
 
 
 /**************************************************************/
+/** Module methods **/
 
 
 Module *newModule(char *name);
@@ -71,6 +72,7 @@ void writeModule(Module *module, char *outputPath);
 
 
 /**************************************************************/
+/** Parsing input object file **/
 
 
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
@@ -83,6 +85,7 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 
 
 /**************************************************************/
+/** Writing output object file **/
 
 
 void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
