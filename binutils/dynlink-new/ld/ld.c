@@ -47,6 +47,13 @@ int main(int argc, char *argv[]) {
 /**************************************************************/
 
 
+void alignAddress(unsigned int *addr) {
+    while(*addr % 4) {
+        (*addr)++;
+    }
+}
+
+
 void printUsage(char *arg0) {
     printf("usage: %s [-o <outfile>] <infile>\n", arg0);
 }
