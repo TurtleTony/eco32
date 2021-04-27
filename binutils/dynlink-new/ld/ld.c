@@ -9,13 +9,23 @@ int main(int argc, char *argv[]) {
 
     char *infile = NULL;
     char *outfile = DEFAULT_OUT_FILE_NAME;
-
-    Module *mod;
+    int pageAlignData = 1;
+    unsigned int codeBaseAddress = DEFAULT_CODE_BASE;
 
     int c;
+    char *endPtr;
     // Get-opt keeps this easily expandable for the future
-    while ((c = getopt(argc, argv, "o:?")) != -1) {
+    while ((c = getopt(argc, argv, "dc:o:?")) != -1) {
         switch (c) {
+            case 'd':
+                pageAlignData = 0;
+                break;
+            case 'c':
+                codeBaseAddress = strtoul(optarg, &endPtr, 0);
+                if (*endPtr != '\0') {
+                    error("option '-c' has an invalid address");
+                }
+                break;
             case 'o':
                 outfile = optarg;
                 break;
@@ -27,21 +37,23 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // TODO: turn into loop, parsing multiple input files
-    if (optind >= argc) {
+    int fileCount = argc - optind;
+    if (fileCount == 0) {
         // Require an additional option for the infile
         printUsage(argv[0]);
         return 1;
     }
 
-    infile = argv[optind];
+    for (int i = 0; i < fileCount; i++) {
+        Module *mod = readModule(argv[optind]);
+        //put segments into segmentgroups and total segments
+        // TODO: allocate storage (set virtual addrs)
+        //allocateSegmentGroups()
+    }
 
-    mod = readModule(infile);
 
-    // TODO: allocate storage (set virtual addrs)
-
-
-    writeModule(mod, outfile);
+    Module *executableModule = newModule("main");
+    writeModule(executableModule, outfile);
     return 0;
 }
 
@@ -59,7 +71,11 @@ void alignAddress(unsigned int *addr) {
 
 
 void printUsage(char *arg0) {
-    printf("usage: %s [-o <outfile>] <infile>\n", arg0);
+    fprintf(stderr, "usage: %s\n", arg0);
+    fprintf(stderr, "         [-d]             data directly after code\n");
+    fprintf(stderr, "         [-c <addr>]      set code base address\n");
+    fprintf(stderr, "         [-o <outfile>]   set output file name\n");
+    fprintf(stderr, "         <infile> ...     input file names\n");
 }
 
 

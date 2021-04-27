@@ -13,8 +13,6 @@
 #include "ecoEndian.h"
 #include "ld.h"
 
-#define DEFAULT_OUT_FILE_NAME "a.out"
-
 typedef struct module {
     char *name;			/* module name */
     unsigned char *data;		/* data space */
