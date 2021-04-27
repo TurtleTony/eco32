@@ -37,6 +37,10 @@ int main(int argc, char *argv[]) {
     infile = argv[optind];
 
     mod = readModule(infile);
+
+    // TODO: allocate storage (set virtual addrs)
+
+
     writeModule(mod, outfile);
     return 0;
 }
