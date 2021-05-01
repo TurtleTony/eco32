@@ -215,7 +215,7 @@ void writeExecutable(char *outputPath, unsigned int codeEntry) {
 
     writeSegments(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
-    writeFinalHeader(codeEntry, &outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeFinalHeader(codeEntry, &outFileHeader, outputFile, outputPath);
 
     fclose(outputFile);
 }
@@ -230,10 +230,7 @@ void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FIL
 }
 
 
-void writeData(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
-               char *outputPath) {
-    Segment *seg;
-
+void writeData(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath) {
     outFileHeader->odata = *outFileOffset;
     outFileHeader->sdata = 0;
 
@@ -254,10 +251,10 @@ void writeDataTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outp
 
         PartialSegment *partial = totalSeg->firstPart;
         while (partial != NULL) {
-            partial->seg->dataOffset = outFileHeader->sdata;
+            partial->seg->dataOffs = outFileHeader->sdata;
 
             unsigned int size = partial->seg->size;
-            unsigned int npad = partial->seg->npad;
+            unsigned int npad = partial->npad;
 
             if (size != 0) {
                 if (fwrite(partial->seg->data, size, 1, outputFile) != 1) {

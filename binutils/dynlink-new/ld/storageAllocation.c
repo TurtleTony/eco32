@@ -4,6 +4,12 @@
 
 #include "storageAllocation.h"
 
+SegmentGroup apxGroup = {ATTR_APX, NULL, NULL};
+SegmentGroup apGroup = {ATTR_AP, NULL, NULL};
+SegmentGroup apwGroup = {ATTR_APW, NULL, NULL};
+SegmentGroup awGroup = {ATTR_AW, NULL, NULL};
+
+
 /**************************************************************/
 /** PHASE I **/
 /**************************************************************/
