@@ -5,11 +5,11 @@
 BUILD = ../../../../build
 
 CC = gcc
-CFLAGS = -g -Wall -I../../dynlink/ex02/include
+CFLAGS = -g -Wall -I../../dynlink/ex03/include
 LDFLAGS = -g
 LDLIBS = -lm
 
-SRCS = ld.c ecoEndian.c eofHandler.c
+SRCS = ld.c ecoEndian.c eofHandler.c storageAllocation.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 BIN = ld
 
