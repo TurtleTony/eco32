@@ -98,7 +98,7 @@ void writeStringsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *o
 void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath);
 
-void writeFinalHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeFinalHeader(unsigned int codeEntry, EofHeader *outFileHeader, FILE *outputFile, char *outputPath);
 
 
 #endif //ECO32_EOFHANDLER_H

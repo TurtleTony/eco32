@@ -214,10 +214,8 @@ void writeExecutable(char *outputPath, unsigned int codeEntry) {
     writeStrings(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
     writeSegments(&outFileHeader, &outFileOffset, outputFile, outputPath);
-//    writeSymbols(&outFileHeader, &outFileOffset, outputFile, outputPath);
-//    writeRelocations(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
-    writeFinalHeader(&outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeFinalHeader(codeEntry, &outFileHeader, &outFileOffset, outputFile, outputPath);
 
     fclose(outputFile);
 }
@@ -353,14 +351,13 @@ void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *
 }
 
 
-void writeFinalHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
-                      char *outputPath) {
+void writeFinalHeader(unsigned int codeEntry, EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
     if (fseek(outputFile, 0, SEEK_SET) != 0) {
         error("cannot seek final header in file '%s'", outputPath);
     }
 
     outFileHeader->magic = EOF_MAGIC;
-    outFileHeader->entry = 0;
+    outFileHeader->entry = codeEntry;
 
     conv4FromNativeToEco((unsigned char *) &outFileHeader->magic);
     conv4FromNativeToEco((unsigned char *) &outFileHeader->osegs);
