@@ -12,6 +12,7 @@
 
 #include "ecoEndian.h"
 #include "ld.h"
+#include "storageAllocation.h"
 
 typedef struct module {
     char *name;			/* module name */
@@ -66,7 +67,7 @@ typedef struct reloc {
 
 Module *newModule(char *name);
 Module *readModule(char *inputPath);
-void writeModule(Module *module, char *outputPath);
+void writeExecutable(char *outputPath, unsigned int codeEntry);
 
 
 /**************************************************************/
@@ -87,12 +88,16 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 
 
 void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeData(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeStrings(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
-void writeSegments(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeSymbols(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeRelocations(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeData(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeDataTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, TotalSegment *totalSeg, FILE *outputFile, char *outputPath);
+
+
+void writeStrings(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+
+void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
+void writeRelocations(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
 void writeFinalHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 

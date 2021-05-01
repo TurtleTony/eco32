@@ -19,6 +19,7 @@
 typedef struct partialSegment {
     Module *mod;				/* module where part comes from */
     Segment *seg;				/* which segment in the module */
+    unsigned int npad;		/* number of padding bytes */
     struct partialSegment *next;		/* next part in total segment */
 } PartialSegment;
 

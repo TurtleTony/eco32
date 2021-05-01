@@ -60,8 +60,7 @@ int main(int argc, char *argv[]) {
     // Pass 2: Compute addresses and sizes
     allocateStorage(codeBaseAddress, pageAlignData);
 
-    Module *executableModule = newModule("main");
-    writeModule(executableModule, outfile);
+    writeExecutable(outfile, codeBaseAddress);
     return 0;
 }
 

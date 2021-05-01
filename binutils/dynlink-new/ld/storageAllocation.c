@@ -125,6 +125,8 @@ unsigned int setTotalAddress(SegmentGroup *segmentGroup, unsigned int currentAdd
             currentAddress += size;
             totalSize += size;
 
+            partial->npad = size - partial->seg->size;
+
             partial = partial->next;
         }
 

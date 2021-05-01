@@ -198,7 +198,7 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 /**************************************************************/
 
 
-void writeModule(Module *module, char *outputPath) {
+void writeExecutable(char *outputPath, unsigned int codeEntry) {
     FILE *outputFile;
 
     EofHeader outFileHeader;
@@ -232,29 +232,60 @@ void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FIL
 }
 
 
-void writeData(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
+void writeData(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                char *outputPath) {
     Segment *seg;
 
     outFileHeader->odata = *outFileOffset;
     outFileHeader->sdata = 0;
 
-    for (int i = 0; i < module->nsegs; i++) {
-        seg = &module->segs[i];
-        seg->dataOffs = outFileHeader->sdata;
-        if (seg->attr & SEG_ATTR_P) {
-            if (fwrite(seg->data, seg->size, 1, outputFile) != 1) {
-                error("cannot write data to file '%s'", outputPath);
+    // All present segments
+    writeDataTotal(outFileHeader, outFileOffset, apxGroup.firstTotal, outputFile, outputPath);
+    writeDataTotal(outFileHeader, outFileOffset, apGroup.firstTotal, outputFile, outputPath);
+    writeDataTotal(outFileHeader, outFileOffset, apwGroup.firstTotal, outputFile, outputPath);
+
+    *outFileOffset += outFileHeader->sdata;
+}
+
+
+void writeDataTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, TotalSegment *totalSeg, FILE *outputFile, char *outputPath){
+    static unsigned char padding[3] = { 0, 0, 0 };
+
+    while (totalSeg != NULL) {
+        totalSeg->dataOffs = outFileHeader->sdata;
+
+        PartialSegment *partial = totalSeg->firstPart;
+        while (partial != NULL) {
+            partial->seg->dataOffset = outFileHeader->sdata;
+
+            unsigned int size = partial->seg->size;
+            unsigned int npad = partial->seg->npad;
+
+            if (size != 0) {
+                if (fwrite(partial->seg->data, size, 1, outputFile) != 1) {
+                    error("cannot write data to file '%s'", outputPath);
+                }
+
+                if (npad != 0) {
+                    // Word align
+                    if (fwrite(padding, 1, partial->npad, outputFile) != partial->npad) {
+                        error("cannot write data padding to file '%s'", outputPath);
+                    }
+                }
             }
-            outFileHeader->sdata += seg->size;
+            outFileHeader->sdata += size + npad;
+
+            partial = partial->next;
         }
+
+        totalSeg = totalSeg->next;
     }
 
     *outFileOffset += outFileHeader->sdata;
 }
 
 
-void writeStrings(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
+void writeStrings(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                   char *outputPath) {
     Segment *seg;
     Symbol *sym;
@@ -288,7 +319,7 @@ void writeStrings(Module *module, EofHeader *outFileHeader, unsigned int *outFil
 }
 
 
-void writeSegments(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
+void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                    char *outputPath) {
     Segment *seg;
     SegmentRecord segmentRecord;
@@ -319,7 +350,7 @@ void writeSegments(Module *module, EofHeader *outFileHeader, unsigned int *outFi
 }
 
 
-void writeSymbols(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
+void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                   char *outputPath) {
     Symbol *sym;
     SymbolRecord symbolRecord;
@@ -348,7 +379,7 @@ void writeSymbols(Module *module, EofHeader *outFileHeader, unsigned int *outFil
 }
 
 
-void writeRelocations(Module *module, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
+void writeRelocations(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                       char *outputPath) {
     Reloc *reloc;
     RelocRecord relocRecord;
