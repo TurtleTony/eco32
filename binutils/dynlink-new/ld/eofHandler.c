@@ -316,19 +316,26 @@ void writeStringsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *o
 
 void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                    char *outputPath) {
-    Segment *seg;
-    SegmentRecord segmentRecord;
-
     outFileHeader->osegs = *outFileOffset;
-    outFileHeader->nsegs = module->nsegs;
+    outFileHeader->nsegs = 0;
 
-    for (int i = 0; i < module->nsegs; i++) {
-        seg = &module->segs[i];
-        segmentRecord.name = seg->nameOffs;
-        segmentRecord.offs = seg->dataOffs;
-        segmentRecord.addr = seg->addr;
-        segmentRecord.size = seg->size;
-        segmentRecord.attr = seg->attr;
+    writeSegmentsTotal(outFileHeader, apxGroup.firstTotal, outputFile, outputPath);
+    writeSegmentsTotal(outFileHeader, apGroup.firstTotal, outputFile, outputPath);
+    writeSegmentsTotal(outFileHeader, apwGroup.firstTotal, outputFile, outputPath);
+    writeSegmentsTotal(outFileHeader, awGroup.firstTotal, outputFile, outputPath);
+
+    *outFileOffset += sizeof(SegmentRecord) * outFileHeader->nsegs;
+}
+
+
+void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath){
+    while (totalSeg != NULL){
+        SegmentRecord segmentRecord;
+        segmentRecord.name = totalSeg->nameOffs;
+        segmentRecord.offs = totalSeg->dataOffs;
+        segmentRecord.addr = totalSeg->addr;
+        segmentRecord.size = totalSeg->size;
+        segmentRecord.attr = totalSeg->attr;
 
         conv4FromNativeToEco((unsigned char *) &segmentRecord.name);
         conv4FromNativeToEco((unsigned char *) &segmentRecord.offs);
@@ -337,10 +344,11 @@ void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *
         conv4FromNativeToEco((unsigned char *) &segmentRecord.attr);
 
         if (fwrite(&segmentRecord, sizeof(SegmentRecord), 1, outputFile) != 1) {
-            error("cannot write segment %d to file '%s'", i, outputPath);
+            error("cannot write segment %d to file '%s'", outFileHeader->nsegs, outputPath);
         }
 
-        *outFileOffset += sizeof(SegmentRecord);
+        outFileHeader->nsegs++;
+        totalSeg = totalSeg->next;
     }
 }
 
