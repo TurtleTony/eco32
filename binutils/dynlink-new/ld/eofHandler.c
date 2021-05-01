@@ -353,66 +353,6 @@ void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *
 }
 
 
-void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
-                  char *outputPath) {
-    Symbol *sym;
-    SymbolRecord symbolRecord;
-
-    outFileHeader->osyms = *outFileOffset;
-    outFileHeader->nsyms = module->nsyms;
-
-    for (int i = 0; i < module->nsyms; i++) {
-        sym = &module->syms[i];
-        symbolRecord.name = sym->nameOffs;
-        symbolRecord.val = sym->val;
-        symbolRecord.seg = sym->seg;
-        symbolRecord.attr = sym->attr;
-
-        conv4FromNativeToEco((unsigned char *) &symbolRecord.name);
-        conv4FromNativeToEco((unsigned char *) &symbolRecord.val);
-        conv4FromNativeToEco((unsigned char *) &symbolRecord.seg);
-        conv4FromNativeToEco((unsigned char *) &symbolRecord.attr);
-
-        if (fwrite(&symbolRecord, sizeof(SymbolRecord), 1, outputFile) != 1) {
-            error("cannot write symbol %d to file '%s'", i, outputPath);
-        }
-
-        *outFileOffset += sizeof(SymbolRecord);
-    }
-}
-
-
-void writeRelocations(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
-                      char *outputPath) {
-    Reloc *reloc;
-    RelocRecord relocRecord;
-
-    outFileHeader->orels = *outFileOffset;
-    outFileHeader->nrels = module->nrels;
-
-    for (int i = 0; i < module->nrels; i++) {
-        reloc = &module->rels[i];
-        relocRecord.loc = reloc->loc;
-        relocRecord.seg = reloc->seg;
-        relocRecord.typ = reloc->typ;
-        relocRecord.ref = reloc->ref;
-        relocRecord.add = reloc->add;
-
-        conv4FromNativeToEco((unsigned char *) &relocRecord.loc);
-        conv4FromNativeToEco((unsigned char *) &relocRecord.seg);
-        conv4FromNativeToEco((unsigned char *) &relocRecord.typ);
-        conv4FromNativeToEco((unsigned char *) &relocRecord.ref);
-        conv4FromNativeToEco((unsigned char *) &relocRecord.add);
-
-        if (fwrite(&relocRecord, sizeof(RelocRecord), 1, outputFile) != 1) {
-            error("cannot write relocation %d to file '%s'", i, outputPath);
-        }
-
-        *outFileOffset += sizeof(RelocRecord);
-    }
-}
-
-
 void writeFinalHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                       char *outputPath) {
     if (fseek(outputFile, 0, SEEK_SET) != 0) {
