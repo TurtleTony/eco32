@@ -240,15 +240,15 @@ void writeData(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outp
     outFileHeader->sdata = 0;
 
     // All present segments
-    writeDataTotal(outFileHeader, outFileOffset, apxGroup.firstTotal, outputFile, outputPath);
-    writeDataTotal(outFileHeader, outFileOffset, apGroup.firstTotal, outputFile, outputPath);
-    writeDataTotal(outFileHeader, outFileOffset, apwGroup.firstTotal, outputFile, outputPath);
+    writeDataTotal(outFileHeader, apxGroup.firstTotal, outputFile, outputPath);
+    writeDataTotal(outFileHeader, apGroup.firstTotal, outputFile, outputPath);
+    writeDataTotal(outFileHeader, apwGroup.firstTotal, outputFile, outputPath);
 
     *outFileOffset += outFileHeader->sdata;
 }
 
 
-void writeDataTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, TotalSegment *totalSeg, FILE *outputFile, char *outputPath){
+void writeDataTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath){
     static unsigned char padding[3] = { 0, 0, 0 };
 
     while (totalSeg != NULL) {
@@ -280,8 +280,6 @@ void writeDataTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, Total
 
         totalSeg = totalSeg->next;
     }
-
-    *outFileOffset += outFileHeader->sdata;
 }
 
 
@@ -290,16 +288,16 @@ void writeStrings(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
     outFileHeader->ostrs = *outFileOffset;
     outFileHeader->sstrs = 0;
 
-    writeStringsTotal(outFileHeader, outFileOffset, apxGroup.firstTotal, outputFile, outputPath);
-    writeStringsTotal(outFileHeader, outFileOffset, apGroup.firstTotal, outputFile, outputPath);
-    writeStringsTotal(outFileHeader, outFileOffset, apwGroup.firstTotal, outputFile, outputPath);
-    writeStringsTotal(outFileHeader, outFileOffset, awGroup.firstTotal, outputFile, outputPath);
+    writeStringsTotal(outFileHeader, apxGroup.firstTotal, outputFile, outputPath);
+    writeStringsTotal(outFileHeader, apGroup.firstTotal, outputFile, outputPath);
+    writeStringsTotal(outFileHeader, apwGroup.firstTotal, outputFile, outputPath);
+    writeStringsTotal(outFileHeader, awGroup.firstTotal, outputFile, outputPath);
 
     *outFileOffset += outFileHeader->sstrs;
 }
 
 
-void writeStringsTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, TotalSegment *totalSeg, FILE *outputFile, char *outputPath) {
+void writeStringsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath) {
     while (totalSeg != NULL){
         totalSeg->nameOffs = outFileHeader->sstrs;
 

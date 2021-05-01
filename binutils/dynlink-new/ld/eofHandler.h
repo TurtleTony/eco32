@@ -90,10 +90,10 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
 void writeData(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeDataTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, TotalSegment *totalSeg, FILE *outputFile, char *outputPath);
+void writeDataTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath);
 
 void writeStrings(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
-void writeStringsTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, TotalSegment *totalSeg, FILE *outputFile, char *outputPath);
+void writeStringsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath);
 
 void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
