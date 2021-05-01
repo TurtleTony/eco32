@@ -39,16 +39,14 @@ int main(int argc, char *argv[]) {
 
     int fileCount = argc - optind;
     if (fileCount == 0) {
-        // Require an additional option for the infile
+        // Require at least one infile
         printUsage(argv[0]);
         return 1;
     }
 
     for (int i = 0; i < fileCount; i++) {
         Module *mod = readModule(argv[optind]);
-        //put segments into segmentgroups and total segments
-        // TODO: allocate storage (set virtual addrs)
-        //allocateSegmentGroups()
+        allocateModuleStorage(mod, codeBaseAddress, pageAlignData);
     }
 
 

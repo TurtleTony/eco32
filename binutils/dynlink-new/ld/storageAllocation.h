@@ -40,6 +40,9 @@ typedef struct segmentGroup {
     TotalSegment *lastTotal;		/* last total segment in group */
 } SegmentGroup;
 
-
+void allocateModuleStorage(Module *mod, unsigned int codeBase, int dataPageAlign);
+void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup);
+void addPartialToGroup(PartialSegment *partialSegment, SegmentGroup *segmentGroup);
+void addPartialToTotal(PartialSegment *partialSegment, TotalSegment *totalSegment);
 
 #endif //ECO32_STORAGEALLOCATION_H
