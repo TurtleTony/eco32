@@ -210,12 +210,12 @@ void writeExecutable(char *outputPath, unsigned int codeEntry) {
     }
 
     writeDummyHeader(&outFileHeader, &outFileOffset, outputFile, outputPath);
-    writeData(module, &outFileHeader, &outFileOffset, outputFile, outputPath);
-    writeStrings(module, &outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeData(&outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeStrings(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
-    writeSegments(module, &outFileHeader, &outFileOffset, outputFile, outputPath);
-    writeSymbols(module, &outFileHeader, &outFileOffset, outputFile, outputPath);
-    writeRelocations(module, &outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeSegments(&outFileHeader, &outFileOffset, outputFile, outputPath);
+//    writeSymbols(&outFileHeader, &outFileOffset, outputFile, outputPath);
+//    writeRelocations(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
     writeFinalHeader(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
@@ -287,35 +287,32 @@ void writeDataTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, Total
 
 void writeStrings(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                   char *outputPath) {
-    Segment *seg;
-    Symbol *sym;
-
-    unsigned int size;
-
     outFileHeader->ostrs = *outFileOffset;
     outFileHeader->sstrs = 0;
 
-    for (int i = 0; i < module->nsegs; i++) {
-        seg = &module->segs[i];
-        seg->nameOffs = outFileHeader->sstrs;
-        size = strlen(seg->name) + 1;
-        if (fwrite(seg->name, size, 1, outputFile) != 1) {
-            error("cannot write segment string to file '%s'", outputPath);
-        }
-        outFileHeader->sstrs += size;
-    }
-
-    for (int j = 0; j < module->nsyms; j++) {
-        sym = &module->syms[j];
-        sym->nameOffs = outFileHeader->sstrs;
-        size = strlen(sym->name) + 1;
-        if (fwrite(sym->name, size, 1, outputFile) != 1) {
-            error("cannot write symbol string to file '%s'", outputPath);
-        }
-        outFileHeader->sstrs += size;
-    }
+    writeStringsTotal(outFileHeader, outFileOffset, apxGroup.firstTotal, outputFile, outputPath);
+    writeStringsTotal(outFileHeader, outFileOffset, apGroup.firstTotal, outputFile, outputPath);
+    writeStringsTotal(outFileHeader, outFileOffset, apwGroup.firstTotal, outputFile, outputPath);
+    writeStringsTotal(outFileHeader, outFileOffset, awGroup.firstTotal, outputFile, outputPath);
 
     *outFileOffset += outFileHeader->sstrs;
+}
+
+
+void writeStringsTotal(EofHeader *outFileHeader, unsigned int *outFileOffset, TotalSegment *totalSeg, FILE *outputFile, char *outputPath) {
+    while (totalSeg != NULL){
+        totalSeg->nameOffs = outFileHeader->sstrs;
+
+        unsigned int size = strlen(totalSeg->name) + 1;
+
+        if (fwrite(totalSeg->name, size, 1, outputFile) != 1) {
+            error("cannot write segment string to file '%s'", outputPath);
+        }
+
+        outFileHeader->sstrs += size;
+
+        totalSeg = totalSeg->next;
+    }
 }
 
 
