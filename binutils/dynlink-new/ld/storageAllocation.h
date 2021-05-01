@@ -7,6 +7,8 @@
 
 
 #include "eofHandler.h"
+#include "eof.h"
+#include "ld.h"
 
 #define ATTR_APX    (SEG_ATTR_A | SEG_ATTR_P | SEG_ATTR_X)
 #define ATTR_AP     (SEG_ATTR_A | SEG_ATTR_P)
@@ -35,14 +37,32 @@ typedef struct totalSegment {
 
 
 typedef struct segmentGroup {
-    unsigned int attr;			/* attributes of this group */
+    unsigned int attr;			    /* attributes of this group */
     TotalSegment *firstTotal;		/* first total segment in group */
     TotalSegment *lastTotal;		/* last total segment in group */
 } SegmentGroup;
 
-void allocateModuleStorage(Module *mod, unsigned int codeBase, int dataPageAlign);
+SegmentGroup apxGroup = {ATTR_APX, NULL, NULL};
+SegmentGroup apGroup = {ATTR_AP, NULL, NULL};
+SegmentGroup apwGroup = {ATTR_APW, NULL, NULL};
+SegmentGroup awGroup = {ATTR_AW, NULL, NULL};
+
+
+/**************************************************************/
+/** Phase I **/
+
+
+void addModuleSegmentsToGroups(Module *mod);
 void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup);
 void addPartialToGroup(PartialSegment *partialSegment, SegmentGroup *segmentGroup);
 void addPartialToTotal(PartialSegment *partialSegment, TotalSegment *totalSegment);
+
+
+/**************************************************************/
+/** Phase II **/
+
+
+void allocateStorage(unsigned int codeBase, int dataPageAlign);
+unsigned int setTotalAddress(SegmentGroup *segmentGroup, unsigned int currentAddress);
 
 #endif //ECO32_STORAGEALLOCATION_H

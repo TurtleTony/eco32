@@ -1,17 +1,15 @@
 //
 // Created by tony on 27.04.21.
 //
+
 #include "storageAllocation.h"
-#include "eof.h"
+
+/**************************************************************/
+/** PHASE I **/
+/**************************************************************/
 
 
-SegmentGroup apxGroup = {ATTR_APX, NULL, NULL};
-SegmentGroup apGroup = {ATTR_AP, NULL, NULL};
-SegmentGroup apwGroup = {ATTR_APW, NULL, NULL};
-SegmentGroup awGroup = {ATTR_AW, NULL, NULL};
-
-void allocateModuleStorage(Module *mod, unsigned int codeBase, int dataPageAlign) {
-    // Pass 1: Build module segments into segment groups
+void addModuleSegmentsToGroups(Module *mod) {
     for(int i = 0; i < mod->nsegs; i++) {
         Segment *seg = &mod->segs[i];
         PartialSegment *partial = safeAlloc(sizeof(PartialSegment));
@@ -35,8 +33,6 @@ void allocateModuleStorage(Module *mod, unsigned int codeBase, int dataPageAlign
                 error("Unknown segment type '%d'!", seg->attr);
         }
     }
-
-    // Pass 2: Compute addresses and sizes
 }
 
 
@@ -89,3 +85,56 @@ void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup) {
     }
     segmentGroup->lastTotal = totalSegment;
 }
+
+
+/**************************************************************/
+/** PHASE II **/
+/**************************************************************/
+
+
+void allocateStorage(unsigned int codeBase, int dataPageAlign) {
+    unsigned int currentAddress = codeBase;
+    currentAddress = setTotalAddress(&apxGroup, currentAddress);
+
+    currentAddress = setTotalAddress(&apxGroup, currentAddress);
+    currentAddress = setTotalAddress(&apGroup, currentAddress);
+
+    if (dataPageAlign) {
+        currentAddress = PAGE_ALIGN(currentAddress);
+    }
+
+    currentAddress = setTotalAddress(&apwGroup, currentAddress);
+    currentAddress = setTotalAddress(&awGroup, currentAddress);
+}
+
+
+unsigned int setTotalAddress(SegmentGroup *segmentGroup, unsigned int currentAddress) {
+    TotalSegment *total = segmentGroup->firstTotal;
+
+    while(total != NULL) {
+        total->addr = currentAddress;
+
+        unsigned int totalSize = 0;
+        PartialSegment *partial = total->firstPart;
+
+        while (partial != NULL) {
+            partial->seg->addr = currentAddress;
+            unsigned int size = partial->seg->size;
+            alignToWord(&size);
+
+            currentAddress += size;
+            totalSize += size;
+
+            partial = partial->next;
+        }
+
+        total->size = totalSize;
+        total = total->next;
+    }
+
+    return currentAddress;
+}
+
+
+
+

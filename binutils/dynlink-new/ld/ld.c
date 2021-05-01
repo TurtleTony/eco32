@@ -25,6 +25,11 @@ int main(int argc, char *argv[]) {
                 if (*endPtr != '\0') {
                     error("option '-c' has an invalid address");
                 }
+                unsigned int codeBaseAligned = codeBaseAddress;
+                alignToWord(&codeBaseAligned);
+                if (codeBaseAddress != codeBaseAligned) {
+                    error("code address must be word aligned!");
+                }
                 break;
             case 'o':
                 outfile = optarg;
@@ -44,11 +49,16 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // Storage allocation
+
+    // Pass 1: Build module segments into segment groups
     for (int i = 0; i < fileCount; i++) {
         Module *mod = readModule(argv[optind]);
-        allocateModuleStorage(mod, codeBaseAddress, pageAlignData);
+        addModuleSegmentsToGroups(mod);
     }
 
+    // Pass 2: Compute addresses and sizes
+    allocateStorage(codeBaseAddress, pageAlignData);
 
     Module *executableModule = newModule("main");
     writeModule(executableModule, outfile);
@@ -61,7 +71,7 @@ int main(int argc, char *argv[]) {
 /**************************************************************/
 
 
-void alignAddress(unsigned int *addr) {
+void alignToWord(unsigned int *addr) {
     while(*addr % 4) {
         (*addr)++;
     }

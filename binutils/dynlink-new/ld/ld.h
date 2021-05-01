@@ -17,12 +17,14 @@
 
 #define DEFAULT_OUT_FILE_NAME   "a.out"
 #define DEFAULT_CODE_BASE	    0x1000
+#define PAGE_ALIGN(x)		(((x) + 0x0FFF) & ~0x0FFF)
 
 
 /**************************************************************/
 /** Helper methods **/
 
 
+void alignToWord(unsigned int *addr);
 void printUsage(char *arg0);
 void error(char *fmt, ...);
 void *safeAlloc(unsigned int size);
