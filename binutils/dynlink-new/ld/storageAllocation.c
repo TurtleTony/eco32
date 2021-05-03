@@ -115,7 +115,6 @@ void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup) {
 
 void allocateStorage(unsigned int codeBase, int dataPageAlign) {
     unsigned int currentAddress = codeBase;
-    currentAddress = setTotalAddress(&apxGroup, currentAddress);
 
     currentAddress = setTotalAddress(&apxGroup, currentAddress);
     currentAddress = setTotalAddress(&apGroup, currentAddress);
