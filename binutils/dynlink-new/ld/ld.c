@@ -8,7 +8,7 @@
 int main(int argc, char *argv[]) {
 
     char *outfile = DEFAULT_OUT_FILE_NAME;
-    int pageAlignData = 1;
+    int pageAlignData = 1; // Default true
     unsigned int codeBaseAddress = DEFAULT_CODE_BASE;
 
     int c;
