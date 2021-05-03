@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
 
     // Pass 1: Build module segments into segment groups
     for (int i = 0; i < fileCount; i++) {
-        Module *mod = readModule(argv[optind]);
+        Module *mod = readModule(argv[optind + i]);
         addModuleSegmentsToGroups(mod);
     }
 
