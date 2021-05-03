@@ -202,6 +202,8 @@ void writeExecutable(char *outputPath, unsigned int codeEntry) {
     FILE *outputFile;
 
     EofHeader outFileHeader;
+    memset(&outFileHeader, 0, sizeof(EofHeader));
+
     unsigned int outFileOffset = 0;
 
     outputFile = fopen(outputPath, "w");
