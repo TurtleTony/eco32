@@ -10,6 +10,33 @@ SegmentGroup apwGroup = {ATTR_APW, NULL, NULL};
 SegmentGroup awGroup = {ATTR_AW, NULL, NULL};
 
 
+PartialSegment *newPartial(Module *module, Segment *segment) {
+    PartialSegment *partial = safeAlloc(sizeof(PartialSegment));
+    partial->mod = module;
+    partial->seg = segment;
+    partial->npad = 0;
+    partial->next = NULL;
+
+    return partial;
+}
+
+
+TotalSegment *newTotal(char *name, unsigned int attr) {
+    TotalSegment *total = safeAlloc(sizeof(TotalSegment));
+
+    total->name = name;
+    total->nameOffs = 0;
+    total->dataOffs = 0;
+    total->addr = 0;
+    total->size = 0;
+    total->attr = attr;
+    total->firstPart = NULL;
+    total->lastPart = NULL;
+    total->next = NULL;
+
+    return total;
+}
+
 /**************************************************************/
 /** PHASE I **/
 /**************************************************************/
@@ -18,11 +45,7 @@ SegmentGroup awGroup = {ATTR_AW, NULL, NULL};
 void addModuleSegmentsToGroups(Module *mod) {
     for(int i = 0; i < mod->nsegs; i++) {
         Segment *seg = &mod->segs[i];
-        PartialSegment *partial = safeAlloc(sizeof(PartialSegment));
-        partial->mod = mod;
-        partial->seg = seg;
-        partial->npad = 0;
-        partial->next = NULL;
+        PartialSegment *partial = newPartial(mod, seg);
 
         switch (seg->attr) {
             case ATTR_APX:
@@ -57,17 +80,7 @@ void addPartialToGroup(PartialSegment *partialSegment, SegmentGroup *segmentGrou
     }
 
     // If no matching total was found
-    total = safeAlloc(sizeof(TotalSegment));
-
-    total->name = partialSegment->seg->name;
-    total->nameOffs = 0;
-    total->dataOffs = 0;
-    total->addr = 0;
-    total->size = 0;
-    total->attr = segmentGroup->attr;
-    total->firstPart = NULL;
-    total->lastPart = NULL;
-    total->next = NULL;
+    total = newTotal(partialSegment->seg->name, segmentGroup->attr);
 
     addTotalToGroup(total, segmentGroup);
 
