@@ -3,7 +3,7 @@
 # (this is example 4.2 from the book "Linkers and Loaders")
 #
 
-BUILD=../../../../../build
+BUILD=../../../../build
 
 all:
 		$(BUILD)/bin/lcc -A -o main.o -c main.s
