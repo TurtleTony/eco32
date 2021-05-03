@@ -59,6 +59,8 @@ int main(int argc, char *argv[]) {
     // Pass 2: Compute addresses and sizes
     allocateStorage(codeBaseAddress, pageAlignData);
 
+    //TODO Symbol value allocation
+
     writeExecutable(outfile, codeBaseAddress);
     return 0;
 }
