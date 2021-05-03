@@ -201,8 +201,7 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 void writeExecutable(char *outputPath, unsigned int codeEntry) {
     FILE *outputFile;
 
-    EofHeader outFileHeader;
-    memset(&outFileHeader, 0, sizeof(EofHeader));
+    EofHeader outFileHeader = {};
 
     unsigned int outFileOffset = 0;
 
