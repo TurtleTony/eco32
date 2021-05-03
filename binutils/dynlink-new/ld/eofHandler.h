@@ -16,17 +16,10 @@
 
 
 /**************************************************************/
-/** Module methods **/
-
-
-Module *newModule(char *name);
-Module *readModule(char *inputPath);
-void writeExecutable(char *outputPath, unsigned int codeEntry);
-
-
-/**************************************************************/
 /** Parsing input object file **/
 
+
+Module *readModule(char *inputPath);
 
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);
@@ -40,6 +33,8 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 /**************************************************************/
 /** Writing output object file **/
 
+
+void writeExecutable(char *outputPath, unsigned int codeEntry);
 
 void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
