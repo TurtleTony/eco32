@@ -8,6 +8,7 @@ all:		simple
 
 simple:		start.o main.o func.o
 		../../ld/ld -m simple.map -o simple start.o main.o func.o
+		cat simple.map
 
 start.o:	start.s
 		$(BUILD)/bin/lcc -A -o start.o -c start.s
