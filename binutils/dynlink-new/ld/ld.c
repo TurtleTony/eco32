@@ -12,11 +12,13 @@ int main(int argc, char *argv[]) {
     char *outfile = DEFAULT_OUT_FILE_NAME;
     int pageAlignData = 1; // Default true
     unsigned int codeBaseAddress = DEFAULT_CODE_BASE;
+    char *startSymbol = DEFAULT_START_SYMBOL;
+    char *endSymbol = DEFAULT_END_SYMBOL;
 
     int c;
     char *endPtr, *mapFileName;
     // Get-opt keeps this easily expandable for the future
-    while ((c = getopt(argc, argv, "dc:o:m:?")) != -1) {
+    while ((c = getopt(argc, argv, "dc:s:e:o:m:?")) != -1) {
         switch (c) {
             case 'd':
                 pageAlignData = 0;
@@ -37,6 +39,12 @@ int main(int argc, char *argv[]) {
                 break;
             case 'm':
                 mapFileName = optarg;
+                break;
+            case 's':
+                startSymbol = optarg;
+                break;
+            case 'e':
+                endSymbol = optarg;
                 break;
             case '?':
                 printUsage(argv[0]);
@@ -70,7 +78,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Pass 2: Compute addresses and sizes
-    allocateStorage(codeBaseAddress, pageAlignData);
+    allocateStorage(codeBaseAddress, pageAlignData, endSymbol);
 
     // Symbol value resolution
     checkUndefinedSymbols();
@@ -79,7 +87,7 @@ int main(int argc, char *argv[]) {
     if (mapFileName != NULL) {
         printMapFile(mapFileName);
     }
-    writeExecutable(outfile, codeBaseAddress);
+    writeExecutable(outfile, startSymbol);
     return 0;
 }
 
@@ -100,7 +108,10 @@ void printUsage(char *arg0) {
     fprintf(stderr, "usage: %s\n", arg0);
     fprintf(stderr, "         [-d]             data directly after code\n");
     fprintf(stderr, "         [-c <addr>]      set code base address\n");
+    fprintf(stderr, "         [-s <symbol>]    set code start symbol\n");
+    fprintf(stderr, "         [-e <symbol>]    set bss end symbol\n");
     fprintf(stderr, "         [-o <outfile>]   set output file name\n");
+    fprintf(stderr, "         [-m <mapfile>]   set map file name\n");
     fprintf(stderr, "         <infile> ...     input file names\n");
 }
 

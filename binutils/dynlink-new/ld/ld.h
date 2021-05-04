@@ -20,7 +20,10 @@
 #define DEFAULT_OUT_FILE_NAME   "a.out"
 #define DEFAULT_CODE_BASE	    0x1000
 
-#define PAGE_ALIGN(x)		(((x) + 0x0FFF) & ~0x0FFF)
+#define PAGE_ALIGN(x)		    (((x) + 0x0FFF) & ~0x0FFF)
+
+#define DEFAULT_START_SYMBOL	"_start"
+#define DEFAULT_END_SYMBOL      "_end"
 
 /**************************************************************/
 /** Helper methods **/

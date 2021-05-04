@@ -114,7 +114,7 @@ void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup) {
 /**************************************************************/
 
 
-void allocateStorage(unsigned int codeBase, int dataPageAlign) {
+void allocateStorage(unsigned int codeBase, int dataPageAlign, char *endSymbolName) {
     unsigned int currentAddress = codeBase;
 
     currentAddress = setTotalAddress(&apxGroup, currentAddress);
@@ -141,7 +141,7 @@ void allocateStorage(unsigned int codeBase, int dataPageAlign) {
     linkerModule->rels = NULL;
 
     Symbol *endSymbol = safeAlloc(sizeof(Symbol));
-    endSymbol->name = DEFAULT_END_SYMBOL;
+    endSymbol->name = endSymbolName;
     endSymbol->val = currentAddress;
     endSymbol->mod = linkerModule;
     endSymbol->seg = -1;

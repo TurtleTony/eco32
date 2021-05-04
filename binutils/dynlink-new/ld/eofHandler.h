@@ -34,7 +34,7 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 /** Writing output object file **/
 
 
-void writeExecutable(char *outputPath, unsigned int codeEntry);
+void writeExecutable(char *outputPath, char *startSymbolName);
 
 void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 

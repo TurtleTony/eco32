@@ -71,6 +71,12 @@ void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
 }
 
 
+Symbol *getSymbolFromGst(char *symbolName) {
+    khint_t k = kh_get(globalSymbolTable, gst, symbolName);
+    return kh_value(gst, k);
+}
+
+
 void checkUndefinedSymbols(void) {
     Symbol *entry;
 

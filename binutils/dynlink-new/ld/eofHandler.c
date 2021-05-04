@@ -202,12 +202,17 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 /**************************************************************/
 
 
-void writeExecutable(char *outputPath, unsigned int codeEntry) {
+void writeExecutable(char *outputPath, char *startSymbolName) {
     FILE *outputFile;
 
     EofHeader outFileHeader = {};
 
     unsigned int outFileOffset = 0;
+
+    Symbol *startSymbol = getSymbolFromGst(startSymbolName);
+    if (startSymbol == NULL) {
+        error("undefined start symbol '%s'", startSymbol);
+    }
 
     outputFile = fopen(outputPath, "w");
     if (outputFile == NULL) {
@@ -220,7 +225,7 @@ void writeExecutable(char *outputPath, unsigned int codeEntry) {
 
     writeSegments(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
-    writeFinalHeader(codeEntry, &outFileHeader, outputFile, outputPath);
+    writeFinalHeader(startSymbol->val, &outFileHeader, outputFile, outputPath);
 
     fclose(outputFile);
 }

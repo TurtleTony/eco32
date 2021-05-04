@@ -4,7 +4,7 @@
 
 #ifndef ECO32_STORAGEALLOCATION_H
 #define ECO32_STORAGEALLOCATION_H
-#define DEFAULT_END_SYMBOL "_end"
+
 
 #include "eofHandler.h"
 #include "eof.h"
@@ -26,7 +26,7 @@ void addPartialToTotal(PartialSegment *partialSegment, TotalSegment *totalSegmen
 /** Phase II **/
 
 
-void allocateStorage(unsigned int codeBase, int dataPageAlign);
+void allocateStorage(unsigned int codeBase, int dataPageAlign, char *endSymbolName);
 unsigned int setTotalAddress(SegmentGroup *segmentGroup, unsigned int currentAddress);
 
 #endif //ECO32_STORAGEALLOCATION_H

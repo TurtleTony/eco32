@@ -15,6 +15,7 @@ KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *);
 void initGst(void);
 void printMapFile(char *fileName);
 void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber);
+Symbol *getSymbolFromGst(char *symbol);
 void checkUndefinedSymbols(void);
 void symbolValueResolution(void);
 
