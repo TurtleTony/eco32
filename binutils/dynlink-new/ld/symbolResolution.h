@@ -16,6 +16,7 @@ void initGst(void);
 void printMapFile(char *fileName);
 void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber);
 void checkUndefinedSymbols(void);
+void symbolValueResolution(void);
 
 
 #endif //ECO32_SYMBOLRESOLUTION_H

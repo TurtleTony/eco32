@@ -72,9 +72,9 @@ int main(int argc, char *argv[]) {
     // Pass 2: Compute addresses and sizes
     allocateStorage(codeBaseAddress, pageAlignData);
 
-    // Check for undefined symbol in gst
+    // Symbol value resolution
     checkUndefinedSymbols();
-    //TODO Symbol value allocation
+    symbolValueResolution();
 
     if (mapFileName != NULL) {
         printMapFile(mapFileName);

@@ -70,6 +70,7 @@ void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
     moduleSymbol->mod->syms[symbolNumber] = tableEntry;
 }
 
+
 void checkUndefinedSymbols(void) {
     Symbol *entry;
 
@@ -84,4 +85,17 @@ void checkUndefinedSymbols(void) {
     if (undefined) {
         error("%d undefined symbol(s) in gst", undefined);
     }
+}
+
+
+void symbolValueResolution(void) {
+    Symbol *entry;
+
+    kh_foreach_value(gst, entry, {
+        // only change non-absolute symbols
+        if (entry->seg != -1) {
+            // Add segment base address to symbol value
+            entry->val += entry->mod->segs[entry->seg].addr;
+        }
+    });
 }
