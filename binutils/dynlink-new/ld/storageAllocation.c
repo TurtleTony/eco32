@@ -134,7 +134,7 @@ void allocateStorage(unsigned int codeBase, int dataPageAlign) {
     endSymbol->seg = -1;
     endSymbol->attr = ~SYM_ATTR_U;
 
-    putSymbolIntoGst(endSymbol, 0)
+    putSymbolIntoGst(endSymbol, 0);
 }
 
 
