@@ -12,7 +12,7 @@ KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *);
 
 #include "ld.h"
 
-void *initGst(void);
+void initGst(void);
 void printMapFile(char *fileName);
 void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber);
 
