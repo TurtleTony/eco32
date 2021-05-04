@@ -29,6 +29,7 @@
 void alignToWord(unsigned int *addr);
 void printUsage(char *arg0);
 void error(char *fmt, ...);
+void warning(char *fmt, ...);
 void *safeAlloc(unsigned int size);
 void safeFree(void *p);
 
