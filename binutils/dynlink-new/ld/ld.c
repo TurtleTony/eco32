@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     unsigned int codeBaseAddress = DEFAULT_CODE_BASE;
 
     int c;
-    char *endPtr;
+    char *endPtr, *mapFileName;
     // Get-opt keeps this easily expandable for the future
     while ((c = getopt(argc, argv, "dc:o:m:?")) != -1) {
         switch (c) {
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
                 outfile = optarg;
                 break;
             case 'm':
-                //TODO: Implement (need to accept param for testing)
+                mapFileName = optarg;
                 break;
             case '?':
                 printUsage(argv[0]);
@@ -75,6 +75,9 @@ int main(int argc, char *argv[]) {
 
     //TODO Symbol value allocation
 
+    if (mapFileName != NULL) {
+        printMapFile(mapFileName, gst);
+    }
     writeExecutable(outfile, codeBaseAddress);
     return 0;
 }
@@ -110,6 +113,27 @@ void error(char *fmt, ...) {
     fprintf(stderr, "!\n");
     va_end(ap);
     exit(1);
+}
+
+
+void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst) {
+    FILE *file;
+    file = fopen(fileName, "w");
+    if (file == NULL) {
+        error("cannot open map file '%s'", fileName);
+    }
+
+    Symbol *entry;
+    kh_foreach_value(gst, entry, {
+        fprintf(file,
+                "%-24s  0x%08X  %-12s  %s\n",
+                entry->name,
+                entry->val,
+                entry->seg == -1 ?
+                "*ABS*" : entry->mod->segs[entry->seg].name,
+                entry->mod->name
+                );
+    })
 }
 
 

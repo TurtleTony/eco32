@@ -34,5 +34,7 @@ void error(char *fmt, ...);
 void *safeAlloc(unsigned int size);
 void safeFree(void *p);
 
+void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst);
+
 
 #endif //ECO32_LD_H
