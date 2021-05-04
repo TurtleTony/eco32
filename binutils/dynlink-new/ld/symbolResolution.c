@@ -82,6 +82,6 @@ void checkUndefinedSymbols(void) {
     });
 
     if (undefined) {
-        error("%d undefined symbols in gst", undefined);
+        error("%d undefined symbol(s) in gst", undefined);
     }
 }
