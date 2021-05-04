@@ -127,10 +127,23 @@ void allocateStorage(unsigned int codeBase, int dataPageAlign) {
     currentAddress = setTotalAddress(&apwGroup, currentAddress);
     currentAddress = setTotalAddress(&awGroup, currentAddress);
 
+    // Put final address into global symbol table
+    // i.e. the heap needs to know this
+    Module *linkerModule = safeAlloc(sizeof(Module));
+    linkerModule->name = "linker";
+    linkerModule->data = NULL;
+    linkerModule->strs = NULL;
+    linkerModule->nsegs = 0;
+    linkerModule->segs = NULL;
+    linkerModule->nsyms = 0;
+    linkerModule->syms = safeAlloc(sizeof(Symbol *));
+    linkerModule->nrels = 0;
+    linkerModule->rels = NULL;
+
     Symbol *endSymbol = safeAlloc(sizeof(Symbol));
     endSymbol->name = DEFAULT_END_SYMBOL;
     endSymbol->val = currentAddress;
-    endSymbol->mod = NULL;
+    endSymbol->mod = linkerModule;
     endSymbol->seg = -1;
     endSymbol->attr = ~SYM_ATTR_U;
 
