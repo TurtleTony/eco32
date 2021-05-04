@@ -31,7 +31,7 @@ void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst) {
 }
 
 
-void symbolNameResolution(khash_t(globalSymbolTable) *gst, Symbol *moduleSymbol, unsigned int symbolNumber) {
+void putSymbolIntoGst(khash_t(globalSymbolTable) *gst, Symbol *moduleSymbol, unsigned int symbolNumber) {
     int ret;
     khiter_t k;
     // Put symbol into table as key

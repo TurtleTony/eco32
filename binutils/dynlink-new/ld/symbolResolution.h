@@ -14,7 +14,7 @@ KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *);
 
 khash_t(globalSymbolTable) *initGst();
 void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst);
-void symbolNameResolution(khash_t(globalSymbolTable) *gst, Symbol *moduleSymbol, unsigned int symbolNumber);
+void putSymbolIntoGst(khash_t(globalSymbolTable) *gst, Symbol *moduleSymbol, unsigned int symbolNumber);
 
 
 #endif //ECO32_SYMBOLRESOLUTION_H

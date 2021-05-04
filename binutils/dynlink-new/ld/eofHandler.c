@@ -161,7 +161,8 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, khash_
         moduleSymbol->seg = symbolRecord.seg;
         moduleSymbol->attr = symbolRecord.attr;
 
-        symbolNameResolution(gst, moduleSymbol, i);
+        // Symbol name resolution
+        putSymbolIntoGst(gst, moduleSymbol, i);
     }
 }
 
