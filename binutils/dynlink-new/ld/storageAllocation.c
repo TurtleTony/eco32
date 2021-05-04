@@ -4,6 +4,7 @@
 
 #include "storageAllocation.h"
 
+
 SegmentGroup apxGroup = {ATTR_APX, NULL, NULL};
 SegmentGroup apGroup = {ATTR_AP, NULL, NULL};
 SegmentGroup apwGroup = {ATTR_APW, NULL, NULL};
@@ -125,6 +126,15 @@ void allocateStorage(unsigned int codeBase, int dataPageAlign) {
 
     currentAddress = setTotalAddress(&apwGroup, currentAddress);
     currentAddress = setTotalAddress(&awGroup, currentAddress);
+
+    Symbol *endSymbol = safeAlloc(sizeof(Symbol));
+    endSymbol->name = DEFAULT_END_SYMBOL;
+    endSymbol->val = currentAddress;
+    endSymbol->mod = NULL;
+    endSymbol->seg = -1;
+    endSymbol->attr = ~SYM_ATTR_U;
+
+    putSymbolIntoGst(endSymbol, 0)
 }
 
 

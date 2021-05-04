@@ -4,7 +4,7 @@
 
 #ifndef ECO32_STORAGEALLOCATION_H
 #define ECO32_STORAGEALLOCATION_H
-
+#define DEFAULT_END_SYMBOL "_end"
 
 #include "eofHandler.h"
 #include "eof.h"
