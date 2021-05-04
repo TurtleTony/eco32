@@ -26,7 +26,7 @@ Module *newModule(char *name) {
 /**************************************************************/
 
 
-Module *readModule(char *inputPath, khash_t(globalSymbolTable) *gst) {
+Module *readModule(char *inputPath) {
     FILE *inputFile;
     EofHeader hdr;
     Module *mod;
@@ -44,7 +44,7 @@ Module *readModule(char *inputPath, khash_t(globalSymbolTable) *gst) {
     parseStrings(mod, hdr.ostrs, hdr.sstrs, inputFile, inputPath);
 
     parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
-    parseSymbols(mod, hdr.osyms, hdr.nsyms, gst, inputFile, inputPath);
+    parseSymbols(mod, hdr.osyms, hdr.nsyms, inputFile, inputPath);
     parseRelocations(mod, hdr.orels, hdr.nrels, inputFile, inputPath);
 
     fclose(inputFile);
@@ -133,8 +133,7 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
 }
 
 
-void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, khash_t(globalSymbolTable) *gst,
-                  FILE *inputFile, char *inputPath) {
+void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath) {
     Symbol *moduleSymbol;
     SymbolRecord symbolRecord;
 
@@ -162,7 +161,7 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, khash_
         moduleSymbol->attr = symbolRecord.attr;
 
         // Symbol name resolution
-        putSymbolIntoGst(gst, moduleSymbol, i);
+        putSymbolIntoGst(moduleSymbol, i);
     }
 }
 

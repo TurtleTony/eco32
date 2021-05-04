@@ -13,8 +13,8 @@ KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *);
 #include "ld.h"
 
 khash_t(globalSymbolTable) *initGst();
-void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst);
-void putSymbolIntoGst(khash_t(globalSymbolTable) *gst, Symbol *moduleSymbol, unsigned int symbolNumber);
+void printMapFile(char *fileName);
+void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber);
 
 
 #endif //ECO32_SYMBOLRESOLUTION_H

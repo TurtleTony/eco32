@@ -5,12 +5,14 @@
 #include "symbolResolution.h"
 
 
+khash_t(globalSymbolTable) *gst;
+
 khash_t(globalSymbolTable) *initGst() {
-    return kh_init(globalSymbolTable);
+    return gst = kh_init(globalSymbolTable);
 }
 
 
-void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst) {
+void printMapFile(char *fileName) {
     FILE *file;
     file = fopen(fileName, "w");
     if (file == NULL) {
@@ -31,7 +33,7 @@ void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst) {
 }
 
 
-void putSymbolIntoGst(khash_t(globalSymbolTable) *gst, Symbol *moduleSymbol, unsigned int symbolNumber) {
+void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
     int ret;
     khiter_t k;
     // Put symbol into table as key

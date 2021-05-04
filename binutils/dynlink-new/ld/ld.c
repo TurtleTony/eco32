@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     Module *modules[fileCount];
     // Build module table
     for (int i = 0; i < fileCount; i++) {
-        modules[i] = readModule(argv[optind + i], gst);
+        modules[i] = readModule(argv[optind + i]);
     }
 
     // Storage allocation
