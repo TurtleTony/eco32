@@ -54,8 +54,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize gst hash table
-    khash_t(globalSymbolTable) *gst;
-    gst = kh_init(globalSymbolTable);
+    khash_t(globalSymbolTable) *gst = initGst();
 
     Module *modules[fileCount];
     // Build module table
@@ -72,6 +71,8 @@ int main(int argc, char *argv[]) {
 
     // Pass 2: Compute addresses and sizes
     allocateStorage(codeBaseAddress, pageAlignData);
+
+    // Check for undefined symbol in gst
 
     //TODO Symbol value allocation
 
@@ -113,27 +114,6 @@ void error(char *fmt, ...) {
     fprintf(stderr, "!\n");
     va_end(ap);
     exit(1);
-}
-
-
-void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst) {
-    FILE *file;
-    file = fopen(fileName, "w");
-    if (file == NULL) {
-        error("cannot open map file '%s'", fileName);
-    }
-
-    Symbol *entry;
-    kh_foreach_value(gst, entry, {
-        fprintf(file,
-                "%-24s  0x%08X  %-12s  %s\n",
-                entry->name,
-                entry->val,
-                entry->seg == -1 ?
-                "*ABS*" : entry->mod->segs[entry->seg].name,
-                entry->mod->name
-                );
-    })
 }
 
 

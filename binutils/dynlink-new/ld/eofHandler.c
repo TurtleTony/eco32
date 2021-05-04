@@ -161,40 +161,7 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, khash_
         moduleSymbol->seg = symbolRecord.seg;
         moduleSymbol->attr = symbolRecord.attr;
 
-        int ret;
-        khiter_t k;
-        // Put symbol into table as key
-        k = kh_put(globalSymbolTable, gst, moduleSymbol->name, &ret);
-        // Get pointer to value
-        Symbol *tableEntry = kh_value(gst, k);
-
-        // Check whether key already existed or not
-        switch (ret) {
-            // Symbol already in gst
-            case 0:
-                if ((moduleSymbol->attr & SYM_ATTR_U) == 0) {
-                    // Module symbol is defined
-                    if ((tableEntry->attr & SYM_ATTR_U) == 0) {
-                        // Gst entry is also defined
-                        error("symbol '%s' in module '%s' defined more than once\n"
-                              "       (previous definition is in module '%s')",
-                              moduleSymbol->name, module->name, tableEntry->mod->name);
-                    }
-                    tableEntry->mod = module;
-                    tableEntry->seg = moduleSymbol->seg;
-                    tableEntry->val = moduleSymbol->val;
-                    tableEntry->attr = moduleSymbol->attr;
-                }
-                break;
-            // Symbol not yet in bucket; put into gst
-            case 1:
-                kh_value(gst, k) = moduleSymbol;
-                break;
-            default:
-                error("Error writing symbol %s into gst", moduleSymbol->name);
-        }
-
-        module->syms[i] = tableEntry;
+        symbolNameResolution(gst, moduleSymbol, i);
     }
 }
 

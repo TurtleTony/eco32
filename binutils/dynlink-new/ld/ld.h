@@ -12,9 +12,7 @@
 #include <ctype.h>
 #include <unistd.h>
 
-#include "khash.h"
-#include "segAndMod.h"
-KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *)
+#include "symbolResolution.h"
 
 #include "eofHandler.h"
 #include "storageAllocation.h"
@@ -33,8 +31,6 @@ void printUsage(char *arg0);
 void error(char *fmt, ...);
 void *safeAlloc(unsigned int size);
 void safeFree(void *p);
-
-void printMapFile(char *fileName, khash_t(globalSymbolTable) *gst);
 
 
 #endif //ECO32_LD_H
