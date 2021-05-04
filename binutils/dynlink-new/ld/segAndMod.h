@@ -21,7 +21,7 @@ typedef struct module {
     int nsegs;			/* number of segments */
     struct segment *segs;		/* array of segments */
     int nsyms;			/* number of symbols */
-    struct symbol *syms;		/* array of symbols */
+    struct symbol **syms;		/* array of pointer to gst entries */
     int nrels;			/* number of relocations */
     struct reloc *rels;		/* array of relocations */
 } Module;
@@ -42,10 +42,9 @@ typedef struct segment {
 typedef struct symbol {
     char *name;			/* symbol name */
     int val;			/* the symbol's value */
+    Module *mod;        /* Module where symbol is located */
     int seg;			/* the symbol's segment, -1: absolute */
     unsigned int attr;		/* symbol attributes */
-    /* used for output only */
-    unsigned int nameOffs;	/* offset in string space */
 } Symbol;
 
 typedef struct reloc {

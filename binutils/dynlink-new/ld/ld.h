@@ -12,13 +12,17 @@
 #include <ctype.h>
 #include <unistd.h>
 
+#include "khash.h"
+#include "segAndMod.h"
+KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *)
+
 #include "eofHandler.h"
 #include "storageAllocation.h"
 
 #define DEFAULT_OUT_FILE_NAME   "a.out"
 #define DEFAULT_CODE_BASE	    0x1000
-#define PAGE_ALIGN(x)		(((x) + 0x0FFF) & ~0x0FFF)
 
+#define PAGE_ALIGN(x)		(((x) + 0x0FFF) & ~0x0FFF)
 
 /**************************************************************/
 /** Helper methods **/

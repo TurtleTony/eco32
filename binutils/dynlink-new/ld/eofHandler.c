@@ -26,7 +26,7 @@ Module *newModule(char *name) {
 /**************************************************************/
 
 
-Module *readModule(char *inputPath) {
+Module *readModule(char *inputPath, khash_t(globalSymbolTable) *gst) {
     FILE *inputFile;
     EofHeader hdr;
     Module *mod;
@@ -44,7 +44,7 @@ Module *readModule(char *inputPath) {
     parseStrings(mod, hdr.ostrs, hdr.sstrs, inputFile, inputPath);
 
     parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
-    parseSymbols(mod, hdr.osyms, hdr.nsyms, inputFile, inputPath);
+    parseSymbols(mod, hdr.osyms, hdr.nsyms, gst, inputFile, inputPath);
     parseRelocations(mod, hdr.orels, hdr.nrels, inputFile, inputPath);
 
     fclose(inputFile);
@@ -133,19 +133,19 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
 }
 
 
-void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath) {
-    Symbol *sym;
+void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, khash_t(globalSymbolTable) *gst,
+                  FILE *inputFile, char *inputPath) {
+    Symbol *moduleSymbol;
     SymbolRecord symbolRecord;
 
     module->nsyms = nsyms;
-    module->syms = safeAlloc(nsyms * sizeof(Symbol));
+    module->syms = safeAlloc(nsyms * sizeof(Symbol *));
 
     if (fseek(inputFile, osyms, SEEK_SET) != 0) {
         error("cannot seek symbol table in input file '%s'", inputPath);
     }
 
     for (int i = 0; i < nsyms; i++) {
-        sym = &module->syms[i];
         if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
             error("cannot read symbol %d in input file '%s'", i, inputPath);
         }
@@ -154,10 +154,43 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *
         conv4FromEcoToNative((unsigned char *) &symbolRecord.seg);
         conv4FromEcoToNative((unsigned char *) &symbolRecord.attr);
 
-        sym->name = module->strs + symbolRecord.name;
-        sym->val = symbolRecord.val;
-        sym->seg = symbolRecord.seg;
-        sym->attr = symbolRecord.attr;
+        moduleSymbol = safeAlloc(sizeof(Symbol));
+        moduleSymbol->name = module->strs + symbolRecord.name;
+        moduleSymbol->val = symbolRecord.val;
+        moduleSymbol->mod = module;
+        moduleSymbol->seg = symbolRecord.seg;
+        moduleSymbol->attr = symbolRecord.attr;
+
+        int ret;
+        khiter_t k;
+        k = kh_put(globalSymbolTable, gst, moduleSymbol->name, &ret);
+        Symbol *tableEntry = kh_value(gst, k);
+
+        switch (ret) {
+            case 0:
+                // Symbol already in gst
+                if ((moduleSymbol->attr & SYM_ATTR_U) == 0) {
+                    // Module symbol is defined
+                    if ((tableEntry->attr & SYM_ATTR_U) == 0) {
+                        // Gst entry is also defined
+                        error("symbol '%s' in module '%s' defined more than once\n"
+                              "       (previous definition is in module '%s')",
+                              moduleSymbol->name, module->name, tableEntry->mod->name);
+                    }
+                    tableEntry->mod = module;
+                    tableEntry->seg = moduleSymbol->seg;
+                    tableEntry->val = moduleSymbol->val;
+                    tableEntry->attr = moduleSymbol->attr;
+                }
+                module->syms[i] = tableEntry;
+                break;
+            case 1:
+                // Symbol not yet in bucket; put into gst
+                *tableEntry = *moduleSymbol;
+                break;
+            default:
+                error("Error writing symbol %s into gst", moduleSymbol->name);
+        }
     }
 }
 

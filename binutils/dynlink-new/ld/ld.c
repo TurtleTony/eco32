@@ -4,6 +4,8 @@
  */
 
 #include "ld.h"
+#include "khash.h"
+#include <string.h>
 
 int main(int argc, char *argv[]) {
 
@@ -48,12 +50,21 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    // Initialize gst hash table
+    khash_t(globalSymbolTable) *gst;
+    gst = kh_init(globalSymbolTable);
+
+    Module *modules[fileCount];
+    // Build module table
+    for (int i = 0; i < fileCount; i++) {
+        modules[i] = readModule(argv[optind + i], gst);
+    }
+
     // Storage allocation
 
     // Pass 1: Build module segments into segment groups
     for (int i = 0; i < fileCount; i++) {
-        Module *mod = readModule(argv[optind + i]);
-        addModuleSegmentsToGroups(mod);
+        addModuleSegmentsToGroups(modules[i]);
     }
 
     // Pass 2: Compute addresses and sizes

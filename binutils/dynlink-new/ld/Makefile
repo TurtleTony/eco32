@@ -5,7 +5,7 @@
 BUILD = ../../../../build
 
 CC = gcc
-CFLAGS = -g -Wall -I../../dynlink/ex03/include
+CFLAGS = -g -Wall -I../../dynlink/ex04/include
 LDFLAGS = -g
 LDLIBS = -lm
 
