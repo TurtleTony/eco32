@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Initialize gst hash table
-    khash_t(globalSymbolTable) *gst = initGst();
+    initGst();
 
     Module *modules[fileCount];
     // Build module table
@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
     //TODO Symbol value allocation
 
     if (mapFileName != NULL) {
-        printMapFile(mapFileName, gst);
+        printMapFile(mapFileName);
     }
     writeExecutable(outfile, codeBaseAddress);
     return 0;

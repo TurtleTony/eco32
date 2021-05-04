@@ -7,8 +7,8 @@
 
 khash_t(globalSymbolTable) *gst;
 
-khash_t(globalSymbolTable) *initGst() {
-    return gst = kh_init(globalSymbolTable);
+void *initGst(void) {
+    gst = kh_init(globalSymbolTable);
 }
 
 
