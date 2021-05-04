@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     allocateStorage(codeBaseAddress, pageAlignData);
 
     // Check for undefined symbol in gst
-
+    checkUndefinedSymbols();
     //TODO Symbol value allocation
 
     if (mapFileName != NULL) {

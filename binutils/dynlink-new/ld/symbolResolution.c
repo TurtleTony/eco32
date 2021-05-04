@@ -29,7 +29,7 @@ void printMapFile(char *fileName) {
                 "*ABS*" : entry->mod->segs[entry->seg].name,
                 entry->mod->name
         );
-    })
+    });
 }
 
 
@@ -68,4 +68,20 @@ void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
     }
 
     moduleSymbol->mod->syms[symbolNumber] = tableEntry;
+}
+
+void checkUndefinedSymbols(void) {
+    Symbol *entry;
+
+    unsigned int undefined = 0;
+    kh_foreach_value(gst, entry, {
+        if ((entry->attr & SYM_ATTR_U) != 0) {
+            undefined++;
+            warning("Undefined symbol '%s' in gst after name resolution", entry->name);
+        }
+    });
+
+    if (undefined) {
+        error("%d undefined symbols in gst", undefined);
+    }
 }
