@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
     int c;
     char *endPtr;
     // Get-opt keeps this easily expandable for the future
-    while ((c = getopt(argc, argv, "dc:o:?")) != -1) {
+    while ((c = getopt(argc, argv, "dc:o:m:?")) != -1) {
         switch (c) {
             case 'd':
                 pageAlignData = 0;
@@ -34,6 +34,9 @@ int main(int argc, char *argv[]) {
                 break;
             case 'o':
                 outfile = optarg;
+                break;
+            case 'm':
+                //TODO: Implement (need to accept param for testing)
                 break;
             case '?':
                 printUsage(argv[0]);
