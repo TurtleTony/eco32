@@ -1,3 +1,5 @@
+    .export _start
+_start:
 	.code
 	.space	0x1017
 
