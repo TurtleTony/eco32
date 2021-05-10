@@ -24,8 +24,11 @@ void readFile(char *inputPath);
 void parseObjectFile(FILE *objectFile, char *inputPath);
 void parseArchiveFile(FILE *archiveFile, char *inputPath);
 
+void parseArchiveHeader(ArchHeader *hdr, FILE *inputFile, char *inputPath);
+char *parseArchiveStrings(unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
+ModuleRecord *parseArchiveModules(unsigned int omods, unsigned int nmods, FILE *inputFile, char *inputPath);
 
-void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
+void parseEofHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);
 void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
 

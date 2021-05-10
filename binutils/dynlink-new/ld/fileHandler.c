@@ -78,7 +78,7 @@ void parseObjectFile(FILE *objectFile, char *inputPath) {
     EofHeader hdr;
     Module *mod;
 
-    parseHeader(&hdr, objectFile, inputPath);
+    parseEofHeader(&hdr, objectFile, inputPath);
     mod = newModule(inputPath);
 
     // Parse metadata first
@@ -92,17 +92,56 @@ void parseObjectFile(FILE *objectFile, char *inputPath) {
 
 void parseArchiveFile(FILE *archiveFile, char *inputPath) {
     ArchHeader hdr;
-    Module *mod;
+    char *strs;
+    ModuleRecord *mods;
 
-    //parseArchiveHeader etc
+    parseArchiveHeader(&hdr, archiveFile, inputPath);
+    strs = parseArchiveStrings(hdr.ostrs, hdr.sstrs, archiveFile, inputPath);
+    mods = parseArchiveModules(hdr.omods, hdr.nmods, archiveFile, inputPath);
+
+    /*pseudo-code:
+        For all modules:
+            check if needed
+            parse
+            ...
+    */
 }
 
-
-void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath) {
+void parseArchiveHeader(ArchHeader *hdr, FILE *inputFile, char *inputPath) {
     if (fseek(inputFile, 0, SEEK_SET) != 0) {
         error("cannot seek header in input file '%s'", inputPath);
     }
-    if (fread(hdr, sizeof(EofHeader), 1, inputFile) != 1) {
+    if (fread(hdr, sizeof(ArchHeader), 1, inputFile) != 1) {
+        error("cannot read header in input file '%s'", inputPath);
+    }
+    conv4FromEcoToNative((unsigned char *) &hdr->magic);
+    conv4FromEcoToNative((unsigned char *) &hdr->omods);
+    conv4FromEcoToNative((unsigned char *) &hdr->nmods);
+    conv4FromEcoToNative((unsigned char *) &hdr->odata);
+    conv4FromEcoToNative((unsigned char *) &hdr->sdata);
+    conv4FromEcoToNative((unsigned char *) &hdr->ostrs);
+    conv4FromEcoToNative((unsigned char *) &hdr->sstrs);
+    if (hdr->magic != ARCH_MAGIC) {
+        error("wrong magic number in input file '%s'", inputPath);
+    }
+    if (strstr(inputPath, ".a") == NULL) {
+        warning("file extension for archive files should be '.a'");
+    }
+}
+
+char *parseArchiveStrings(unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath) {
+
+}
+
+ModuleRecord *parseArchiveModules(unsigned int omods, unsigned int nmods, FILE *inputFile, char *inputPath) {
+
+}
+
+void parseEofHeader(EofHeader *hdr, FILE *eofHeader, char *inputPath) {
+    if (fseek(eofHeader, 0, SEEK_SET) != 0) {
+        error("cannot seek header in input file '%s'", inputPath);
+    }
+    if (fread(hdr, sizeof(EofHeader), 1, eofHeader) != 1) {
         error("cannot read header in input file '%s'", inputPath);
     }
     conv4FromEcoToNative((unsigned char *) &hdr->magic);
@@ -119,6 +158,9 @@ void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath) {
     conv4FromEcoToNative((unsigned char *) &hdr->entry);
     if (hdr->magic != EOF_MAGIC) {
         error("wrong magic number in input file '%s'", inputPath);
+    }
+    if (strstr(inputPath, ".o") == NULL) {
+        warning("file extension for object files should be '.o'");
     }
 }
 
