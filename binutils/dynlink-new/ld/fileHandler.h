@@ -21,6 +21,9 @@
 
 
 void readFile(char *inputPath);
+void parseObjectFile(FILE *objectFile, char *inputPath);
+void parseArchiveFile(FILE *archiveFile, char *inputPath);
+
 
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);

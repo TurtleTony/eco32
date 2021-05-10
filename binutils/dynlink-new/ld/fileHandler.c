@@ -47,9 +47,6 @@ void readFile(char *inputPath) {
     FILE *inputFile;
     unsigned int magicNumber;
 
-    EofHeader hdr;
-    Module *mod;
-
     inputFile = fopen(inputPath, "r");
     if (inputFile == NULL) {
         error("cannot open input file '%s'", inputPath);
@@ -65,25 +62,39 @@ void readFile(char *inputPath) {
 
     switch(magicNumber) {
         case EOF_MAGIC:
-            parseHeader(&hdr, inputFile, inputPath);
-            mod = newModule(inputPath);
-
-            // Parse metadata first
-            parseData(mod, hdr.odata, hdr.sdata, inputFile, inputPath);
-            parseStrings(mod, hdr.ostrs, hdr.sstrs, inputFile, inputPath);
-
-            parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
-            parseSymbols(mod, hdr.osyms, hdr.nsyms, inputFile, inputPath);
-            parseRelocations(mod, hdr.orels, hdr.nrels, inputFile, inputPath);
-
-            fclose(inputFile);
+            parseObjectFile(inputFile, inputPath);
             break;
         case ARCH_MAGIC:
-            //TODO: Implement read archive
+            parseArchiveFile(inputFile, inputPath);
             break;
         default:
             error("unknown magic number in input file '%s'", inputPath);
     }
+
+    fclose(inputFile);
+}
+
+void parseObjectFile(FILE *objectFile, char *inputPath) {
+    EofHeader hdr;
+    Module *mod;
+
+    parseHeader(&hdr, objectFile, inputPath);
+    mod = newModule(inputPath);
+
+    // Parse metadata first
+    parseData(mod, hdr.odata, hdr.sdata, objectFile, inputPath);
+    parseStrings(mod, hdr.ostrs, hdr.sstrs, objectFile, inputPath);
+
+    parseSegments(mod, hdr.osegs, hdr.nsegs, objectFile, inputPath);
+    parseSymbols(mod, hdr.osyms, hdr.nsyms, objectFile, inputPath);
+    parseRelocations(mod, hdr.orels, hdr.nrels, objectFile, inputPath);
+}
+
+void parseArchiveFile(FILE *archiveFile, char *inputPath) {
+    ArchHeader hdr;
+    Module *mod;
+
+    //parseArchiveHeader etc
 }
 
 
