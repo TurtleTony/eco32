@@ -33,9 +33,6 @@ typedef struct segment {
     unsigned int addr;		/* virtual start address */
     unsigned int size;		/* size of segment in bytes */
     unsigned int attr;		/* segment attributes */
-    /* used for output only */
-    unsigned int nameOffs;	/* offset in string space */
-    unsigned int dataOffs;	/* offset in segment data */
 } Segment;
 
 

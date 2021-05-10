@@ -261,8 +261,6 @@ void writeDataTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outp
 
         PartialSegment *partial = totalSeg->firstPart;
         while (partial != NULL) {
-            partial->seg->dataOffs = outFileHeader->sdata;
-
             unsigned int size = partial->seg->size;
             unsigned int npad = partial->npad;
 
