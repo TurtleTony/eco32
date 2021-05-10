@@ -45,6 +45,8 @@ Module *firstModule() {
 
 void readFile(char *inputPath) {
     FILE *inputFile;
+    unsigned int magicNumber;
+
     EofHeader hdr;
     Module *mod;
 
@@ -56,8 +58,6 @@ void readFile(char *inputPath) {
     if (fseek(inputFile, 0, SEEK_SET) != 0) {
         error("cannot seek magic number in input file '%s'", inputPath);
     }
-
-    unsigned int magicNumber;
 
     if (fread(&magicNumber, sizeof(unsigned int), 1, inputFile) != 1) {
         error("cannot read magic number in input file '%s'", inputPath);
