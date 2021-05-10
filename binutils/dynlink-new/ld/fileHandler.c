@@ -43,7 +43,7 @@ Module *firstModule() {
 /**************************************************************/
 
 
-void *readFile(char *inputPath) {
+void readFile(char *inputPath) {
     FILE *inputFile;
     EofHeader hdr;
     Module *mod;

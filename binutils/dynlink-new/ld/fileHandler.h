@@ -20,7 +20,7 @@
 /** Parsing input object file **/
 
 
-void *readFile(char *inputPath);
+void readFile(char *inputPath);
 
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);
