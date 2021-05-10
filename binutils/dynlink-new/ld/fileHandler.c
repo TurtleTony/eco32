@@ -2,10 +2,13 @@
 // Created by tony on 27.04.21.
 //
 
-#include "eofHandler.h"
+#include "fileHandler.h"
+
+Module *firstMod = NULL;
 
 Module *newModule(char *name) {
     Module *mod;
+    static Module *previous = NULL;
 
     mod = safeAlloc(sizeof(Module));
     mod->name = name;
@@ -17,7 +20,21 @@ Module *newModule(char *name) {
     mod->syms = NULL;
     mod->nrels = 0;
     mod->rels = NULL;
+    mod->next = NULL;
+
+    if (previous != NULL) {
+        previous->next = mod;
+    } else {
+        firstMod = mod;
+    }
+
+    previous = mod;
+
     return mod;
+}
+
+Module *firstModule() {
+    return firstMod;
 }
 
 
@@ -26,7 +43,7 @@ Module *newModule(char *name) {
 /**************************************************************/
 
 
-Module *readModule(char *inputPath) {
+void *readFile(char *inputPath) {
     FILE *inputFile;
     EofHeader hdr;
     Module *mod;
@@ -36,19 +53,37 @@ Module *readModule(char *inputPath) {
         error("cannot open input file '%s'", inputPath);
     }
 
-    parseHeader(&hdr, inputFile, inputPath);
-    mod = newModule(inputPath);
+    if (fseek(inputFile, 0, SEEK_SET) != 0) {
+        error("cannot seek magic number in input file '%s'", inputPath);
+    }
 
-    // Parse metadata first
-    parseData(mod, hdr.odata, hdr.sdata, inputFile, inputPath);
-    parseStrings(mod, hdr.ostrs, hdr.sstrs, inputFile, inputPath);
+    unsigned int magicNumber;
 
-    parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
-    parseSymbols(mod, hdr.osyms, hdr.nsyms, inputFile, inputPath);
-    parseRelocations(mod, hdr.orels, hdr.nrels, inputFile, inputPath);
+    if (fread(&magicNumber, sizeof(unsigned int), 1, inputFile) != 1) {
+        error("cannot read magic number in input file '%s'", inputPath);
+    }
 
-    fclose(inputFile);
-    return mod;
+    switch(magicNumber) {
+        case EOF_MAGIC:
+            parseHeader(&hdr, inputFile, inputPath);
+            mod = newModule(inputPath);
+
+            // Parse metadata first
+            parseData(mod, hdr.odata, hdr.sdata, inputFile, inputPath);
+            parseStrings(mod, hdr.ostrs, hdr.sstrs, inputFile, inputPath);
+
+            parseSegments(mod, hdr.osegs, hdr.nsegs, inputFile, inputPath);
+            parseSymbols(mod, hdr.osyms, hdr.nsyms, inputFile, inputPath);
+            parseRelocations(mod, hdr.orels, hdr.nrels, inputFile, inputPath);
+
+            fclose(inputFile);
+            break;
+        case ARCH_MAGIC:
+            //TODO: Implement read archive
+            break;
+        default:
+            error("unknown magic number in input file '%s'", inputPath);
+    }
 }
 
 

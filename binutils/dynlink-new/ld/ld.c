@@ -64,17 +64,19 @@ int main(int argc, char *argv[]) {
     // Initialize gst hash table
     initGst();
 
-    Module *modules[fileCount];
     // Build module table
     for (int i = 0; i < fileCount; i++) {
-        modules[i] = readModule(argv[optind + i]);
+        readFile(argv[optind + i]);
     }
 
     // Storage allocation
+    Module *module = firstModule();
 
     // Pass 1: Build module segments into segment groups
-    for (int i = 0; i < fileCount; i++) {
-        addModuleSegmentsToGroups(modules[i]);
+    while(module->next != NULL) {
+        addModuleSegmentsToGroups(module);
+
+        module = module->next;
     }
 
     // Pass 2: Compute addresses and sizes

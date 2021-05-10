@@ -24,6 +24,7 @@ typedef struct module {
     struct symbol **syms;		/* array of pointer to gst entries */
     int nrels;			/* number of relocations */
     struct reloc *rels;		/* array of relocations */
+    struct module *next;       /* next module in order */
 } Module;
 
 

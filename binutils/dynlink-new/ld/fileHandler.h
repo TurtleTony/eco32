@@ -2,13 +2,14 @@
 // Created by tony on 27.04.21.
 //
 
-#ifndef ECO32_EOFHANDLER_H
-#define ECO32_EOFHANDLER_H
+#ifndef ECO32_FILEHANDLER_H
+#define ECO32_FILEHANDLER_H
 
 
 #include <stdio.h>
 
 #include "eof.h"
+#include "ar.h"
 
 #include "ecoEndian.h"
 #include "ld.h"
@@ -19,7 +20,7 @@
 /** Parsing input object file **/
 
 
-Module *readModule(char *inputPath);
+void *readFile(char *inputPath);
 
 void parseHeader(EofHeader *hdr, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);
@@ -29,6 +30,7 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
 void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath);
 void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath);
 
+Module *firstModule();
 
 /**************************************************************/
 /** Writing output object file **/
@@ -50,4 +52,4 @@ void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *
 void writeFinalHeader(unsigned int codeEntry, EofHeader *outFileHeader, FILE *outputFile, char *outputPath);
 
 
-#endif //ECO32_EOFHANDLER_H
+#endif //ECO32_FILEHANDLER_H

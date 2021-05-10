@@ -6,7 +6,7 @@
 #define ECO32_STORAGEALLOCATION_H
 
 
-#include "eofHandler.h"
+#include "fileHandler.h"
 #include "eof.h"
 #include "ld.h"
 #include "segAndMod.h"

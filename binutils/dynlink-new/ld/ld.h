@@ -14,7 +14,7 @@
 
 #include "symbolResolution.h"
 
-#include "eofHandler.h"
+#include "fileHandler.h"
 #include "storageAllocation.h"
 
 #define DEFAULT_OUT_FILE_NAME   "a.out"
