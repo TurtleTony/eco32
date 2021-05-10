@@ -211,7 +211,7 @@ void writeExecutable(char *outputPath, char *startSymbolName) {
 
     Symbol *startSymbol = getSymbolFromGst(startSymbolName);
     if (startSymbol == NULL) {
-        error("undefined start symbol '%s'", startSymbol);
+        error("undefined start symbol '%s'", startSymbolName);
     }
 
     outputFile = fopen(outputPath, "w");
