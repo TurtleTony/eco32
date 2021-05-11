@@ -27,6 +27,7 @@ void parseArchiveFile(FILE *archiveFile, char *inputPath);
 void parseArchiveHeader(ArchHeader *hdr, FILE *inputFile, char *inputPath);
 char *parseArchiveStrings(unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
 ModuleRecord *parseArchiveModules(unsigned int omods, unsigned int nmods, FILE *inputFile, char *inputPath);
+int moduleNeeded(ModuleRecord *moduleRecord, char *strs);
 
 void parseEofHeader(EofHeader *hdr, unsigned int fileOffset, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);

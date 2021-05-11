@@ -109,18 +109,39 @@ void parseArchiveFile(FILE *archiveFile, char *inputPath) {
     strs = parseArchiveStrings(hdr.ostrs, hdr.sstrs, archiveFile, inputPath);
     mods = parseArchiveModules(hdr.omods, hdr.nmods, archiveFile, inputPath);
 
-    for (int i = 0; i < hdr.nmods; i++) {
-        ModuleRecord moduleRecord = mods[i];
-        char *moduleName = strs + moduleRecord.name;
-        parseObjectFile(moduleName, moduleRecord.offs, archiveFile, inputPath);
+    int moduleWasNeeded;
+    do {
+        moduleWasNeeded = 0;
+        for (int i = 0; i < hdr.nmods; i++) {
+            if (!moduleNeeded(&mods[i], strs)) continue;
+
+            moduleWasNeeded = 1;
+
+            char *moduleName = strs + mods[i].name;
+            parseObjectFile(moduleName, hdr.odata + mods[i].offs, archiveFile, inputPath);
+
+            /* No need to scan symbol directory again, already parsed */
+            mods[i].nsym = 0;
+        }
+    } while (moduleWasNeeded);
+    safeFree(mods);
+    safeFree(strs);
+}
+
+
+int moduleNeeded(ModuleRecord *moduleRecord, char *strs) {
+    char *fsym = strs + moduleRecord->fsym;
+
+    for (int i = 0; i < moduleRecord->nsym; i++) {
+        Symbol *entry = getSymbolFromGst(fsym);
+        if (entry != NULL && (entry->attr & SYM_ATTR_U) != 0) {
+            /* Symbol is undefined */
+            return 1;
+        }
+        while (*fsym++ != '\0') ;
     }
 
-    /*pseudo-code:
-        For all modules:
-            check if needed
-            parse
-            ...
-    */
+    return 0;
 }
 
 
