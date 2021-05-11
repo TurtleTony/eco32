@@ -166,7 +166,7 @@ ModuleRecord *parseArchiveModules(unsigned int omods, unsigned int nmods, FILE *
     }
 
     for (int i = 0; i < nmods; i++) {
-        if (fread(&moduleRecords[0], sizeof(ModuleRecord), 1, inputFile) != 1) {
+        if (fread(&moduleRecords[i], sizeof(ModuleRecord), 1, inputFile) != 1) {
             error("cannot read module %d in input file '%s'", i, inputPath);
         }
         conv4FromEcoToNative((unsigned char *) &moduleRecords[i].name);
