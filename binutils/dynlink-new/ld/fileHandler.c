@@ -103,6 +103,12 @@ void parseArchiveFile(FILE *archiveFile, char *inputPath) {
     strs = parseArchiveStrings(hdr.ostrs, hdr.sstrs, archiveFile, inputPath);
     mods = parseArchiveModules(hdr.omods, hdr.nmods, archiveFile, inputPath);
 
+    for (int i = 0; i < hdr.nmods; i++) {
+        ModuleRecord moduleRecord = mods[i];
+        char *moduleName = strs + moduleRecord.name;
+        parseObjectFile(moduleName, moduleRecord.offs, archiveFile, inputPath);
+    }
+
     /*pseudo-code:
         For all modules:
             check if needed
@@ -136,12 +142,38 @@ void parseArchiveHeader(ArchHeader *hdr, FILE *inputFile, char *inputPath) {
 
 
 char *parseArchiveStrings(unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath) {
+    if (fseek(inputFile, ostrs, SEEK_SET) != 0) {
+        error("cannot seek string space in input file '%s'", inputPath);
+    }
 
+    char *strings = safeAlloc(sstrs);
+
+    if (fread(strings, sstrs, 1, inputFile) != 1) {
+        error("cannot read string space in input file '%s'", inputPath);
+    }
+    return strings;
 }
 
 
 ModuleRecord *parseArchiveModules(unsigned int omods, unsigned int nmods, FILE *inputFile, char *inputPath) {
+    ModuleRecord *moduleRecords = safeAlloc(nmods * sizeof(ModuleRecord));
 
+    if (fseek(inputFile, omods, SEEK_SET) != 0) {
+        error("cannot seek module table in input file '%s'", inputPath);
+    }
+
+    for (int i = 0; i < nmods; i++) {
+        if (fread(&moduleRecords[0], sizeof(ModuleRecord), 1, inputFile) != 1) {
+            error("cannot read module %d in input file '%s'", i, inputPath);
+        }
+        conv4FromEcoToNative((unsigned char *) &moduleRecords[i].name);
+        conv4FromEcoToNative((unsigned char *) &moduleRecords[i].offs);
+        conv4FromEcoToNative((unsigned char *) &moduleRecords[i].size);
+        conv4FromEcoToNative((unsigned char *) &moduleRecords[i].fsym);
+        conv4FromEcoToNative((unsigned char *) &moduleRecords[i].nsym);
+    }
+
+    return moduleRecords;
 }
 
 
