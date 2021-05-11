@@ -33,6 +33,7 @@ Module *newModule(char *name) {
     return mod;
 }
 
+
 Module *firstModule() {
     return firstMod;
 }
@@ -59,36 +60,39 @@ void readFile(char *inputPath) {
     if (fread(&magicNumber, sizeof(unsigned int), 1, inputFile) != 1) {
         error("cannot read magic number in input file '%s'", inputPath);
     }
+    conv4FromEcoToNative((unsigned char *) &magicNumber);
 
     switch(magicNumber) {
         case EOF_MAGIC:
-            parseObjectFile(inputFile, inputPath);
+            parseObjectFile(inputPath, 0, inputFile, inputPath);
             break;
         case ARCH_MAGIC:
             parseArchiveFile(inputFile, inputPath);
             break;
         default:
-            error("unknown magic number in input file '%s'", inputPath);
+            error("unknown magic number '%x' in input file '%s'", magicNumber, inputPath);
     }
 
     fclose(inputFile);
 }
 
-void parseObjectFile(FILE *objectFile, char *inputPath) {
+
+void parseObjectFile(char *moduleName, unsigned int fileOffset, FILE *objectFile, char *inputPath) {
     EofHeader hdr;
     Module *mod;
 
-    parseEofHeader(&hdr, objectFile, inputPath);
-    mod = newModule(inputPath);
+    parseEofHeader(&hdr, fileOffset, objectFile, inputPath);
+    mod = newModule(moduleName);
 
     // Parse metadata first
-    parseData(mod, hdr.odata, hdr.sdata, objectFile, inputPath);
-    parseStrings(mod, hdr.ostrs, hdr.sstrs, objectFile, inputPath);
+    parseData(mod, fileOffset + hdr.odata, hdr.sdata, objectFile, inputPath);
+    parseStrings(mod, fileOffset + hdr.ostrs, hdr.sstrs, objectFile, inputPath);
 
-    parseSegments(mod, hdr.osegs, hdr.nsegs, objectFile, inputPath);
-    parseSymbols(mod, hdr.osyms, hdr.nsyms, objectFile, inputPath);
-    parseRelocations(mod, hdr.orels, hdr.nrels, objectFile, inputPath);
+    parseSegments(mod, fileOffset + hdr.osegs, hdr.nsegs, objectFile, inputPath);
+    parseSymbols(mod, fileOffset + hdr.osyms, hdr.nsyms, objectFile, inputPath);
+    parseRelocations(mod, fileOffset + hdr.orels, hdr.nrels, objectFile, inputPath);
 }
+
 
 void parseArchiveFile(FILE *archiveFile, char *inputPath) {
     ArchHeader hdr;
@@ -106,6 +110,7 @@ void parseArchiveFile(FILE *archiveFile, char *inputPath) {
             ...
     */
 }
+
 
 void parseArchiveHeader(ArchHeader *hdr, FILE *inputFile, char *inputPath) {
     if (fseek(inputFile, 0, SEEK_SET) != 0) {
@@ -129,16 +134,19 @@ void parseArchiveHeader(ArchHeader *hdr, FILE *inputFile, char *inputPath) {
     }
 }
 
+
 char *parseArchiveStrings(unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath) {
 
 }
+
 
 ModuleRecord *parseArchiveModules(unsigned int omods, unsigned int nmods, FILE *inputFile, char *inputPath) {
 
 }
 
-void parseEofHeader(EofHeader *hdr, FILE *eofHeader, char *inputPath) {
-    if (fseek(eofHeader, 0, SEEK_SET) != 0) {
+
+void parseEofHeader(EofHeader *hdr, unsigned int fileOffset, FILE *eofHeader, char *inputPath) {
+    if (fseek(eofHeader, fileOffset, SEEK_SET) != 0) {
         error("cannot seek header in input file '%s'", inputPath);
     }
     if (fread(hdr, sizeof(EofHeader), 1, eofHeader) != 1) {
