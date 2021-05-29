@@ -25,7 +25,7 @@ void relocateModules(void) {
                 baseAddr = module->segs[reloc->ref].addr;
             }
 
-            uint32_t value = baseAddr + reloc->add;
+            int value = baseAddr + reloc->add;
 
             // How to relocate
             switch (reloc->typ & ~RELOC_SYM) {
@@ -40,9 +40,9 @@ void relocateModules(void) {
                     value /= 4;
 
                     if (((value >> 16) != 0) &&
-                        ((value >> 16) & 0xFFFF) != 0xFFFF
+                        ((value >> 16) & 0x3FFF) != 0x3FFF
                     ) {
-                        error("relocation jump address out of range: %d", value);
+                        error("relocation jump address out of R16 range: %d", value);
                     }
 
                     mask = 0x0000FFFF;
@@ -50,12 +50,12 @@ void relocateModules(void) {
                     break;
                 case RELOC_R26:
                     value -= (addr + 4);
-                    value /= 4;
+                    value = value / 4;
 
                     if ((value >> 26) != 0 &&
-                        ((value >> 26) & 0x3F) != 0x3F
+                        ((value >> 26) & 0x0F) != 0x0F
                     ) {
-                        error("relocation jump address out of range: %x", value);
+                        error("relocation jump address out of R26 range: %x", value);
                     }
 
                     mask = 0x03FFFFFF;
