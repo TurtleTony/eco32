@@ -89,6 +89,9 @@ int main(int argc, char *argv[]) {
     if (mapFileName != NULL) {
         printMapFile(mapFileName);
     }
+
+    relocateModules();
+
     writeExecutable(outfile, startSymbol);
     return 0;
 }

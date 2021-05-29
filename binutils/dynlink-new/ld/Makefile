@@ -9,7 +9,7 @@ CFLAGS = -g -Wall -I../../dynlink/ex04/include
 LDFLAGS = -g
 LDLIBS = -lm
 
-SRCS = ld.c ecoEndian.c symbolResolution.c fileHandler.c storageAllocation.c
+SRCS = ld.c ecoEndian.c symbolResolution.c fileHandler.c storageAllocation.c relocation.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 BIN = ld
 
