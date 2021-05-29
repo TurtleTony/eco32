@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 
     // Symbol value resolution
     checkUndefinedSymbols();
-    symbolValueResolution();
+    resolveSymbolValues();
 
     if (mapFileName != NULL) {
         printMapFile(mapFileName);

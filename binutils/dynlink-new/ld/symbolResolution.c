@@ -94,7 +94,7 @@ void checkUndefinedSymbols(void) {
 }
 
 
-void symbolValueResolution(void) {
+void resolveSymbolValues(void) {
     Symbol *entry;
 
     kh_foreach_value(gst, entry, {
