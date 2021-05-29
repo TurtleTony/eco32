@@ -39,8 +39,10 @@ void relocateModules(void) {
                     value -= (addr + 4) / 4;
                     value /= 4;
 
-                    if ((value >> 16) != 0) {
-                        error("relocation jump address out of range");
+                    if (((value >> 16) != 0) &&
+                        ((value >> 16) & 0xFFFF) != 0xFFFF
+                    ) {
+                        error("relocation jump address out of range: %d", value);
                     }
 
                     mask = 0x0000FFFF;
@@ -50,8 +52,10 @@ void relocateModules(void) {
                     value -= (addr + 4);
                     value /= 4;
 
-                    if ((value >> 26) != 0) {
-                        error("relocation jump address out of range");
+                    if ((value >> 26) != 0 &&
+                        ((value >> 26) & 0x3F) != 0x3F
+                    ) {
+                        error("relocation jump address out of range: %x", value);
                     }
 
                     mask = 0x03FFFFFF;
