@@ -61,7 +61,7 @@ void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
                 tableEntry->attr = moduleSymbol->attr;
             }
             break;
-            // Symbol not yet in bucket; put into gst
+        // Symbol not yet in bucket; put into gst
         case 1:
             kh_value(gst, k) = moduleSymbol;
             break;

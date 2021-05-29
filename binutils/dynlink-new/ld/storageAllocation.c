@@ -179,7 +179,3 @@ unsigned int setTotalAddress(SegmentGroup *segmentGroup, unsigned int currentAdd
 
     return currentAddress;
 }
-
-
-
-
