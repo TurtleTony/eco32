@@ -2,7 +2,7 @@
 # Makefile for C relocation test
 #
 
-BUILD = ../../../../../build
+BUILD = ../../../../build
 
 all:
 		@echo "Please use one of these targets:"
