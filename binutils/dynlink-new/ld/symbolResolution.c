@@ -69,7 +69,7 @@ void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
             error("Error writing symbol %s into gst", moduleSymbol->name);
     }
 
-    moduleSymbol->mod->syms[symbolNumber] = tableEntry;
+    moduleSymbol->mod->syms[symbolNumber] = kh_value(gst, k);
 }
 
 
