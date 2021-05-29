@@ -8,10 +8,15 @@ void relocateModules(void) {
     Module *module = firstModule();
 
     while (module != NULL) {
-        for (int i = 0; i < module->nrels; ++i) {
+        for (int i = 0; i < module->nrels; i++) {
             Reloc *reloc = &module->rels[i];
+            // Where to relocate
+            unsigned char *target = module->segs[reloc->seg].data + reloc->loc;
+            unsigned int addr = module->segs[reloc->seg].addr + reloc->loc;
+
             unsigned int baseAddr, mask;
 
+            // What to relocate
             if (reloc->typ & RELOC_SYM) {
                 // Symbol relocation
                 baseAddr = module->syms[reloc->ref]->val;
@@ -20,11 +25,7 @@ void relocateModules(void) {
                 baseAddr = module->segs[reloc->ref].addr;
             }
 
-            // What to relocate
             uint32_t value = baseAddr + reloc->add;
-            // Where to relocate
-            unsigned char *target = module->segs[reloc->seg].data + reloc->loc;
-            unsigned int addr = module->segs[reloc->seg].addr + reloc->loc;
 
             // How to relocate
             switch (reloc->typ & ~RELOC_SYM) {
