@@ -36,7 +36,7 @@ void relocateModules(void) {
                     write4ToEco(target, (value & mask) | (read4FromEco(target) & ~mask));
                     break;
                 case RELOC_R16:
-                    value -= (addr + 4) / 4;
+                    value -= (addr + 4);
                     value /= 4;
 
                     if (((value >> 16) != 0) &&
@@ -50,7 +50,7 @@ void relocateModules(void) {
                     break;
                 case RELOC_R26:
                     value -= (addr + 4);
-                    value = value / 4;
+                    value /= 4;
 
                     if ((value >> 26) != 0 &&
                         ((value >> 26) & 0x0F) != 0x0F
