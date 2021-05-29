@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     Module *module = firstModule();
 
     // Pass 1: Build module segments into segment groups
-    while(module->next != NULL) {
+    while(module != NULL) {
         addModuleSegmentsToGroups(module);
 
         module = module->next;
