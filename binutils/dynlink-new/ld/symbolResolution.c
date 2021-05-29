@@ -30,6 +30,8 @@ void printMapFile(char *fileName) {
                 entry->mod->name
         );
     });
+
+    fclose(file);
 }
 
 
