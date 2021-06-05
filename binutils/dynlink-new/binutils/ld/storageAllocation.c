@@ -124,6 +124,8 @@ void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup) {
 void buildGotSegment(void) {
     Segment *gotSegment = newSegment(".got", gotSize(), ATTR_APW);
 
+    // Initialize a fake "linker module" to associate this partial with
+    // This is necessary because there is no "real" module for the got
     linkerModule = safeAlloc(sizeof(Module));
     linkerModule->name = "linker";
     linkerModule->data = NULL;
