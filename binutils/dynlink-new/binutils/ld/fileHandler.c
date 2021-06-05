@@ -342,6 +342,14 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
         reloc->typ = relocRecord.typ;
         reloc->ref = relocRecord.ref;
         reloc->add = relocRecord.add;
+
+        if ((reloc->typ & ~RELOC_SYM) == RELOC_GP_L16) {
+            if (!(reloc->typ & RELOC_SYM)) {
+                error("got pointer relocation has to reference symbol");
+            }
+
+            putEntryIntoGot(module->syms[reloc->ref]);
+        }
     }
 }
 

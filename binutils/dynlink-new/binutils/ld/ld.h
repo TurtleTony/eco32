@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 #include "symbolResolution.h"
+#include "globalOffsetTable.h"
 
 #include "fileHandler.h"
 #include "storageAllocation.h"

@@ -19,18 +19,11 @@ void putEntryIntoGot(Symbol *symbol) {
     // Put symbol into table as key
     k = kh_put(globalOffsetTable, got, (u_int64_t) symbol, &ret);
 
-    // Check whether key already existed or not
-    switch (ret) {
-        // Symbol already in got
-        case 0:
-        // Symbol not yet in bucket; put into got
-        case 1:
-            kh_value(got, k) = 0; //TODO: placeholder
-            // TODO: increment size etc.
-            gotEntries++;
-            break;
-        default:
-            error("Error writing symbol %s into got", symbol->name);
+    if (ret == 1) {
+        // New entry
+        kh_value(got, k) = gotEntries++ * 4;
+    } else if (ret == -1) {
+        error("Error writing symbol %s into got", symbol->name);
     }
 }
 

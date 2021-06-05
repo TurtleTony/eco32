@@ -64,6 +64,9 @@ int main(int argc, char *argv[]) {
     // Initialize gst hash table
     initGst();
 
+    // Initialize global offset table
+    initGot();
+
     // Build module table
     for (int i = 0; i < fileCount; i++) {
         readFile(argv[optind + i]);
