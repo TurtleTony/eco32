@@ -63,7 +63,7 @@ void readFile(char *inputPath) {
     conv4FromEcoToNative((unsigned char *) &magicNumber);
 
     switch(magicNumber) {
-        case EOF_MAGIC:
+        case EOF_R_MAGIC:
             if (strcmp(strstr(inputPath, ".o"), ".o") != 0) {
                 warning("file extension for object files should be '.o'");
             }
@@ -220,7 +220,7 @@ void parseEofHeader(EofHeader *hdr, unsigned int fileOffset, FILE *inputFile, ch
     conv4FromEcoToNative((unsigned char *) &hdr->ostrs);
     conv4FromEcoToNative((unsigned char *) &hdr->sstrs);
     conv4FromEcoToNative((unsigned char *) &hdr->entry);
-    if (hdr->magic != EOF_MAGIC) {
+    if (hdr->magic != EOF_R_MAGIC) {
         error("wrong magic number in input file '%s'", inputPath);
     }
 }
@@ -510,7 +510,7 @@ void writeFinalHeader(unsigned int codeEntry, EofHeader *outFileHeader, FILE *ou
         error("cannot seek final header in file '%s'", outputPath);
     }
 
-    outFileHeader->magic = EOF_MAGIC;
+    outFileHeader->magic = EOF_X_MAGIC;
     outFileHeader->entry = codeEntry;
 
     conv4FromNativeToEco((unsigned char *) &outFileHeader->magic);
