@@ -1,4 +1,4 @@
-BUILD=../../build
+BUILD=../../../build
 SIM=../../../../../build/bin/sim
 
 all:
