@@ -3,7 +3,7 @@
 //
 
 #ifndef ECO32_GLOBALOFFSETTABLE_H
-#define ECO32_SYMBOLRESOLUTION_H
+#define ECO32_GLOBALOFFSETTABLE_H
 
 
 #include "khash.h"
