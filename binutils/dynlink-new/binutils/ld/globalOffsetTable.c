@@ -28,7 +28,7 @@ void putEntryIntoGot(Symbol *symbol) {
 }
 
 
-unsigned int getEntryFromGot(Symbol *symbol) {
+unsigned int getOffsetFromGot(Symbol *symbol) {
     khint_t k = kh_get(globalOffsetTable, got, (u_int64_t) symbol);
     return kh_value(got, k);
 }
