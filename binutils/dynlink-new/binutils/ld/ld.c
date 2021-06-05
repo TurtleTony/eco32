@@ -76,7 +76,8 @@ int main(int argc, char *argv[]) {
     Module *module = firstModule();
 
     // Add got segment first
-    buildGotSegment();
+    Segment *gotSegment;
+    buildGotSegment(gotSegment);
 
     // Pass 1: Build module segments into segment groups
     while(module != NULL) {
@@ -96,7 +97,7 @@ int main(int argc, char *argv[]) {
         printMapFile(mapFileName);
     }
 
-    relocateModules();
+    relocateModules(gotSegment);
 
     writeExecutable(outfile, startSymbol);
     return 0;

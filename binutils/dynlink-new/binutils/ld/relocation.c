@@ -4,7 +4,7 @@
 
 #include "relocation.h"
 
-void relocateModules(void) {
+void relocateModules(Segment *gotSegment) {
     Module *module = firstModule();
 
     while (module != NULL) {
@@ -15,11 +15,15 @@ void relocateModules(void) {
             unsigned int addr = module->segs[reloc->seg].addr + reloc->loc;
 
             unsigned int baseAddr, mask;
+            unsigned int pc = addr + 4;
 
             // What to relocate
             if (reloc->typ & RELOC_SYM) {
                 // Symbol relocation
                 baseAddr = module->syms[reloc->ref]->val;
+            } else if(reloc->ref == -1) {
+                // Got address relocation
+                baseAddr = gotSegment->addr;
             } else {
                 // Segment relocation
                 baseAddr = module->segs[reloc->ref].addr;
@@ -33,10 +37,9 @@ void relocateModules(void) {
                     value >>= 16;
                 case RELOC_L16:
                     mask = 0x0000FFFF;
-                    write4ToEco(target, (value & mask) | (read4FromEco(target) & ~mask));
                     break;
                 case RELOC_R16:
-                    value -= (addr + 4);
+                    value -= pc;
                     value /= 4;
 
                     if (((value >> 16) != 0) &&
@@ -46,10 +49,9 @@ void relocateModules(void) {
                     }
 
                     mask = 0x0000FFFF;
-                    write4ToEco(target, (value & mask) | (read4FromEco(target) & ~mask));
                     break;
                 case RELOC_R26:
-                    value -= (addr + 4);
+                    value -= pc;
                     value /= 4;
 
                     if ((value >> 26) != 0 &&
@@ -59,14 +61,39 @@ void relocateModules(void) {
                     }
 
                     mask = 0x03FFFFFF;
-                    write4ToEco(target, (value & mask) | (read4FromEco(target) & ~mask));
                     break;
                 case RELOC_W32:
-                    write4ToEco(target, value);
+                    mask = 0xFFFFFFFF;
+                    break;
+                case RELOC_GA_H16:
+                    value -= pc;
+                    value >>= 16;
+
+                    mask = 0x0000FFFF;
+                    break;
+                case RELOC_GA_L16:
+                    value -= pc;
+
+                    mask = 0x0000FFFF;
+                    break;
+                case RELOC_GR_H16:
+                    value -= gotSegment->addr;
+                    value >>= 16;
+
+                    mask = 0x0000FFFF;
+                    break;
+                case RELOC_GR_L16:
+                    value -= gotSegment->addr;
+
+                    mask = 0x0000FFFF;
+                    break;
+                case RELOC_GP_L16:
+
                     break;
                 default:
                     error("unknown relocation type '%d'", reloc->typ);
             }
+            write4ToEco(target, (value & mask) | (read4FromEco(target) & ~mask));
 
         }
 
