@@ -223,11 +223,26 @@ void readHeader(void) {
 
 
 void dumpHeader(void) {
-  if (inFileHeader.magic != EOF_MAGIC) {
-    error("wrong magic number in exec header");
+  char *type;
+
+  if (inFileHeader.magic != EOF_R_MAGIC &&
+      inFileHeader.magic != EOF_X_MAGIC &&
+      inFileHeader.magic != EOF_D_MAGIC) {
+    error("wrong magic number in object header");
+  }
+  switch (inFileHeader.magic) {
+    case EOF_R_MAGIC:
+      type = "relocatable";
+      break;
+    case EOF_X_MAGIC:
+      type = "executable";
+      break;
+    case EOF_D_MAGIC:
+      type = "dynamic library";
+      break;
   }
   printf("Header\n");
-  printf("    magic number              : 0x%08X\n", inFileHeader.magic);
+  printf("    magic number              : EOF %s\n", type);
   printf("    offset of segment table   : 0x%08X\n", inFileHeader.osegs);
   printf("    number of segment entries : %10u\n", inFileHeader.nsegs);
   printf("    offset of symbol table    : 0x%08X\n", inFileHeader.osyms);
@@ -389,7 +404,13 @@ void dumpRelocTable(void) {
   for (rn = 0; rn < inFileHeader.nrels; rn++) {
     printf("    %d:\n", rn);
     printf("        loc  = 0x%08X\n", relocTable[rn].loc);
-    printf("        seg  = %d\n", relocTable[rn].seg);
+    printf("        seg  = ");
+    if (relocTable[rn].seg == -1) {
+      printf("*none*");
+    } else {
+      printf("%d", relocTable[rn].seg);
+    }
+    printf("\n");
     printf("        typ  = ");
     switch (relocTable[rn].typ & ~RELOC_SYM) {
       case RELOC_H16:
@@ -407,14 +428,38 @@ void dumpRelocTable(void) {
       case RELOC_W32:
         printf("W32");
         break;
+      case RELOC_GA_H16:
+        printf("GA_H16");
+        break;
+      case RELOC_GA_L16:
+        printf("GA_L16");
+        break;
+      case RELOC_GR_H16:
+        printf("GR_H16");
+        break;
+      case RELOC_GR_L16:
+        printf("GR_L16");
+        break;
+      case RELOC_GP_L16:
+        printf("GP_L16");
+        break;
+      case RELOC_ER_W32:
+        printf("ER_W32");
+        break;
       default:
         printf("\n");
         error("unknown relocation type 0x%08X", relocTable[rn].typ);
     }
     printf("\n");
-    printf("        ref  = %s # %d\n",
-           relocTable[rn].typ & RELOC_SYM ? "symbol" : "segment",
-           relocTable[rn].ref);
+    printf("        ref  = ");
+    if (relocTable[rn].ref == -1) {
+      printf("*none*");
+    } else {
+      printf("%s # %d",
+             relocTable[rn].typ & RELOC_SYM ? "symbol" : "segment",
+             relocTable[rn].ref);
+    }
+    printf("\n");
     printf("        add  = 0x%08X\n", relocTable[rn].add);
   }
 }
