@@ -15,6 +15,7 @@ KHASH_MAP_INIT_INT64(globalOffsetTable, unsigned int);
 void initGot(void);
 void putEntryIntoGot(Symbol *symbol);
 unsigned int getEntryFromGot(Symbol *symbol);
+unsigned int gotSize(void);
 
 
 #endif //ECO32_GLOBALOFFSETTABLE_H

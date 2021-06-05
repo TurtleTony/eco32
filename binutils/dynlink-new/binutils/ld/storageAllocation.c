@@ -10,6 +10,17 @@ SegmentGroup apGroup = {ATTR_AP, NULL, NULL};
 SegmentGroup apwGroup = {ATTR_APW, NULL, NULL};
 SegmentGroup awGroup = {ATTR_AW, NULL, NULL};
 
+Segment *newSegment(char *name, unsigned int size, unsigned int attr) {
+    Segment *segment = safeAlloc(sizeof(Segment));
+    segment->name = name;
+    segment->data = safeAlloc(size);
+    segment->addr = 0;
+    segment->size = size;
+    segment->attr = attr;
+
+    return segment;
+}
+
 
 PartialSegment *newPartial(Module *module, Segment *segment) {
     PartialSegment *partial = safeAlloc(sizeof(PartialSegment));
@@ -37,6 +48,8 @@ TotalSegment *newTotal(char *name, unsigned int attr) {
 
     return total;
 }
+
+Module *linkerModule;
 
 /**************************************************************/
 /** PHASE I **/
@@ -108,6 +121,24 @@ void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup) {
     segmentGroup->lastTotal = totalSegment;
 }
 
+void buildGotSegment(void) {
+    Segment *gotSegment = newSegment(".got", gotSize(), ATTR_APW);
+
+    linkerModule = safeAlloc(sizeof(Module));
+    linkerModule->name = "linker";
+    linkerModule->data = NULL;
+    linkerModule->strs = NULL;
+    linkerModule->nsegs = 0;
+    linkerModule->segs = NULL;
+    linkerModule->nsyms = 0;
+    linkerModule->syms = safeAlloc(sizeof(Symbol *));
+    linkerModule->nrels = 0;
+    linkerModule->rels = NULL;
+
+    PartialSegment *partial = newPartial(linkerModule, gotSegment);
+    addPartialToGroup(partial, &apwGroup);
+}
+
 
 /**************************************************************/
 /** PHASE II **/
@@ -129,17 +160,6 @@ void allocateStorage(unsigned int codeBase, int dataPageAlign, char *endSymbolNa
 
     // Put final address into global symbol table
     // i.e. the heap needs to know this
-    Module *linkerModule = safeAlloc(sizeof(Module));
-    linkerModule->name = "linker";
-    linkerModule->data = NULL;
-    linkerModule->strs = NULL;
-    linkerModule->nsegs = 0;
-    linkerModule->segs = NULL;
-    linkerModule->nsyms = 0;
-    linkerModule->syms = safeAlloc(sizeof(Symbol *));
-    linkerModule->nrels = 0;
-    linkerModule->rels = NULL;
-
     Symbol *endSymbol = safeAlloc(sizeof(Symbol));
     endSymbol->name = endSymbolName;
     endSymbol->val = currentAddress;

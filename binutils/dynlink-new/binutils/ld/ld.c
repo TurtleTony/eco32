@@ -75,6 +75,9 @@ int main(int argc, char *argv[]) {
     // Storage allocation
     Module *module = firstModule();
 
+    // Add got segment first
+    buildGotSegment();
+
     // Pass 1: Build module segments into segment groups
     while(module != NULL) {
         addModuleSegmentsToGroups(module);

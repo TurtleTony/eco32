@@ -32,3 +32,7 @@ unsigned int getEntryFromGot(Symbol *symbol) {
     khint_t k = kh_get(globalOffsetTable, got, (u_int64_t) symbol);
     return kh_value(got, k);
 }
+
+unsigned int gotSize() {
+    return gotEntries * 4;
+}

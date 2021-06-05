@@ -20,6 +20,7 @@ void addModuleSegmentsToGroups(struct module *mod);
 void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup);
 void addPartialToGroup(PartialSegment *partialSegment, SegmentGroup *segmentGroup);
 void addPartialToTotal(PartialSegment *partialSegment, TotalSegment *totalSegment);
+void buildGotSegment(void);
 
 
 /**************************************************************/
