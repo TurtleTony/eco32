@@ -327,6 +327,3 @@ void printf(char *fmt, ...) {
   vprintf(fmt, ap);
   va_end(ap);
 }
-for i in * ; do
-		  $(MAKE) -C $$i clean ;
-		done
