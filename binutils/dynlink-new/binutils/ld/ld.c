@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
     Module *module = firstModule();
 
     // Add got segment first
-    Segment *gotSegment;
+    Segment *gotSegment = NULL;
     buildGotSegment(gotSegment);
 
     // Pass 1: Build module segments into segment groups
