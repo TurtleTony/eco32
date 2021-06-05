@@ -9,7 +9,7 @@ CFLAGS = -g -Wall -I../include
 LDFLAGS = -g
 LDLIBS = -lm
 
-SRCS = ld.c ecoEndian.c symbolResolution.c fileHandler.c storageAllocation.c relocation.c
+SRCS = ld.c ecoEndian.c symbolResolution.c globalOffsetTable.c fileHandler.c storageAllocation.c relocation.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 BIN = ld
 
