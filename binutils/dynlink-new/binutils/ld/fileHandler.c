@@ -123,7 +123,11 @@ void parseArchiveFile(FILE *archiveFile, char *inputPath) {
 
             moduleWasNeeded = 1;
 
-            char *moduleName = strs + mods[i].name;
+            char *moduleName = safeAlloc(strlen(strs + mods[i].name) + 1);
+            strcpy(moduleName, strs + mods[i].name);
+#ifdef DEBUG
+            debugPrintf("   Parsing module '%s' from archive file '%s'", moduleName, inputPath);
+#endif
             parseObjectFile(moduleName, hdr.odata + mods[i].offs, archiveFile, inputPath);
 
             /* No need to scan symbol directory again, already parsed */
