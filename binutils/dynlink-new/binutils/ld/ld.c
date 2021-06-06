@@ -131,7 +131,10 @@ int main(int argc, char *argv[]) {
 #endif
     relocate(gotSegment);
 
-    writeExecutable(outfile, startSymbol);
+#ifdef DEBUG
+    debugPrintf("Write output file");
+#endif
+    writeExecutable(outfile, startSymbol, gotSegment);
     return 0;
 }
 

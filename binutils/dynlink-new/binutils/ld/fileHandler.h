@@ -43,7 +43,7 @@ Module *firstModule();
 /** Writing output object file **/
 
 
-void writeExecutable(char *outputPath, char *startSymbolName);
+void writeExecutable(char *outputPath, char *startSymbolName, Segment *gotSegment);
 
 void writeDummyHeader(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
@@ -55,6 +55,8 @@ void writeStringsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *o
 
 void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath);
+
+void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath);
 
 void writeFinalHeader(unsigned int codeEntry, EofHeader *outFileHeader, FILE *outputFile, char *outputPath);
 

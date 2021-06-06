@@ -401,7 +401,7 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 /**************************************************************/
 
 
-void writeExecutable(char *outputPath, char *startSymbolName) {
+void writeExecutable(char *outputPath, char *startSymbolName, Segment *gotSegment) {
     FILE *outputFile;
 
     EofHeader outFileHeader = {};
@@ -423,6 +423,7 @@ void writeExecutable(char *outputPath, char *startSymbolName) {
     writeStrings(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
     writeSegments(&outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeRelocations(gotSegment, &outFileHeader, &outFileOffset, outputFile, outputPath);
 
     writeFinalHeader(startSymbol->val, &outFileHeader, outputFile, outputPath);
 
@@ -530,7 +531,7 @@ void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *
 }
 
 
-void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath){
+void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath) {
     while (totalSeg != NULL){
         SegmentRecord segmentRecord;
         segmentRecord.name = totalSeg->nameOffs;
@@ -551,6 +552,33 @@ void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *
 
         outFileHeader->nsegs++;
         totalSeg = totalSeg->next;
+    }
+}
+
+
+void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath) {
+    outFileHeader->orels = *outFileOffset;
+    outFileHeader->nrels = 0;
+
+    for (int i = 0; i < gotSegment->size; i+=4) {
+        RelocRecord relocRecord;
+        relocRecord.loc = gotSegment->addr + i;
+        relocRecord.seg = -1;
+        relocRecord.typ = RELOC_ER_W32;
+        relocRecord.ref = -1;
+        relocRecord.add = 0;
+
+        conv4FromEcoToNative((unsigned char *) &relocRecord.loc);
+        conv4FromEcoToNative((unsigned char *) &relocRecord.seg);
+        conv4FromEcoToNative((unsigned char *) &relocRecord.typ);
+        conv4FromEcoToNative((unsigned char *) &relocRecord.ref);
+        conv4FromEcoToNative((unsigned char *) &relocRecord.add);
+
+        if (fwrite(&relocRecord, sizeof(RelocRecord), 1, outputFile) != 1) {
+            error("cannot write loader relocation to file '%s'", outputPath);
+        }
+
+        outFileHeader->nrels++;
     }
 }
 
