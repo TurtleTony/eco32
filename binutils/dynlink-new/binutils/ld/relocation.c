@@ -93,14 +93,14 @@ void relocate(Segment *gotSegment) {
                     relocType = "W32";
                     break;
                 case RELOC_GA_H16:
-                    refValue -= pc;
+                    refValue -= relocAddress;
                     refValue >>= 16;
 
                     mask = 0x0000FFFF;
                     relocType = "GA_H16";
                     break;
                 case RELOC_GA_L16:
-                    refValue -= pc;
+                    refValue -= relocAddress;
 
                     mask = 0x0000FFFF;
                     relocType = "GA_L16";
