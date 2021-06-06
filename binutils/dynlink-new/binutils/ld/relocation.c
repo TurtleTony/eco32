@@ -119,13 +119,13 @@ void relocate(Segment *gotSegment) {
                     relocType = "GR_L16";
                     break;
                 case RELOC_GP_L16:
-                    /*symbol = module->syms[reloc->ref];
+                    symbol = module->syms[reloc->ref];
                     refValue = getOffsetFromGot(symbol);
 
-                    gotSegment->data[refValue] = symbol->val;
+                    write4ToEco(&gotSegment->data[refValue], symbol->val);
 
                     mask = 0x0000FFFF;
-                    relocType = "GP_L16";*/
+                    relocType = "GP_L16";
                     break;
                 default:
                     error("unknown relocation type '%d'", reloc->typ);
