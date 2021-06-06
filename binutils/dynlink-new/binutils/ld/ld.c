@@ -85,11 +85,13 @@ int main(int argc, char *argv[]) {
     Module *module = firstModule();
 
     // Add got segment first
-    Segment *gotSegment = NULL;
 #ifdef DEBUG
     debugPrintf("Building got segment");
 #endif
-    buildGotSegment(gotSegment);
+    Segment *gotSegment = buildGotSegment();
+#ifdef DEBUG
+    debugPrintf("Built got segment with size 0x%08X", gotSegment->size);
+#endif
 
 #ifdef DEBUG
     debugPrintf("Building segment groups from modules");

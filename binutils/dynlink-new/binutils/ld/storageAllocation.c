@@ -127,8 +127,8 @@ void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup) {
     segmentGroup->lastTotal = totalSegment;
 }
 
-void buildGotSegment(Segment *gotSegment) {
-    gotSegment = newSegment(".got", gotSize(), ATTR_APW);
+Segment *buildGotSegment(void) {
+    Segment *gotSegment = newSegment(".got", gotSize(), ATTR_APW);
 
     // Initialize a fake "linker module" to associate this partial with
     // This is necessary because there is no "real" module for the got
@@ -145,6 +145,8 @@ void buildGotSegment(Segment *gotSegment) {
 
     PartialSegment *partial = newPartial(linkerModule, gotSegment);
     addPartialToGroup(partial, &apwGroup);
+
+    return gotSegment;
 }
 
 
