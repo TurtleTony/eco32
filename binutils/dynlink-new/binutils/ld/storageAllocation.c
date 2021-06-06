@@ -57,8 +57,14 @@ Module *linkerModule;
 
 
 void addModuleSegmentsToGroups(Module *mod) {
+#ifdef DEBUG
+    debugPrintf("  Building module '%s'", mod->name);
+#endif
     for(int i = 0; i < mod->nsegs; i++) {
         Segment *seg = &mod->segs[i];
+#ifdef DEBUG
+        debugPrintf("    Building partial segment '%s' in module '%s'", seg->name, mod->name);
+#endif
         PartialSegment *partial = newPartial(mod, seg);
 
         switch (seg->attr) {
@@ -150,16 +156,34 @@ void buildGotSegment(Segment *gotSegment) {
 void allocateStorage(unsigned int codeBase, int dataPageAlign, char *endSymbolName) {
     unsigned int currentAddress = codeBase;
 
+#ifdef DEBUG
+    debugPrintf("  Allocating APX group @ 0x%08X", currentAddress);
+#endif
     currentAddress = setTotalAddress(&apxGroup, currentAddress);
+#ifdef DEBUG
+    debugPrintf("  Allocating AP  group @ 0x%08X", currentAddress);
+#endif
     currentAddress = setTotalAddress(&apGroup, currentAddress);
 
     if (dataPageAlign) {
+#ifdef DEBUG
+        debugPrintf("  Aligning data page from 0x%08X to 0x%08X", currentAddress, PAGE_ALIGN(currentAddress));
+#endif
         currentAddress = PAGE_ALIGN(currentAddress);
     }
 
+#ifdef DEBUG
+    debugPrintf("  Allocating APW group @ 0x%08X", currentAddress);
+#endif
     currentAddress = setTotalAddress(&apwGroup, currentAddress);
+#ifdef DEBUG
+    debugPrintf("  Allocating AW  group @ 0x%08X", currentAddress);
+#endif
     currentAddress = setTotalAddress(&awGroup, currentAddress);
 
+#ifdef DEBUG
+    debugPrintf("  Setting endSymbol '%s' to 0x%08X", endSymbolName, currentAddress);
+#endif
     // Put final address into global symbol table
     // i.e. the heap needs to know this
     Symbol *endSymbol = safeAlloc(sizeof(Symbol));
@@ -177,6 +201,9 @@ unsigned int setTotalAddress(SegmentGroup *segmentGroup, unsigned int currentAdd
     TotalSegment *total = segmentGroup->firstTotal;
 
     while(total != NULL) {
+#ifdef DEBUG
+        debugPrintf("    total segment '%s' @ 0x%08X", total->name, currentAddress);
+#endif
         total->addr = currentAddress;
 
         unsigned int totalSize = 0;
@@ -191,7 +218,9 @@ unsigned int setTotalAddress(SegmentGroup *segmentGroup, unsigned int currentAdd
             totalSize += size;
 
             partial->npad = size - partial->seg->size;
-
+#ifdef DEBUG
+            debugPrintf("      partial segment @ 0x%08X, size: 0x%08X + %u", partial->seg->addr, partial->seg->size, partial->npad);
+#endif
             partial = partial->next;
         }
 

@@ -10,7 +10,7 @@
 #include "fileHandler.h"
 
 
-void relocateModules(Segment *gotSegment);
+void relocate(Segment *gotSegment);
 
 
 #endif //ECO32_RELOCATION_H

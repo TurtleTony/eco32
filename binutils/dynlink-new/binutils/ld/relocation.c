@@ -4,7 +4,7 @@
 
 #include "relocation.h"
 
-void relocateModules(Segment *gotSegment) {
+void relocate(Segment *gotSegment) {
     Module *module = firstModule();
 
     while (module != NULL) {

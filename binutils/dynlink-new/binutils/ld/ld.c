@@ -17,6 +17,9 @@ int main(int argc, char *argv[]) {
 
     int c;
     char *endPtr, *mapFileName;
+#ifdef DEBUG
+    debugPrintf("Parsing command-line options");
+#endif
     // Get-opt keeps this easily expandable for the future
     while ((c = getopt(argc, argv, "dc:s:e:o:m:?")) != -1) {
         switch (c) {
@@ -61,12 +64,18 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+#ifdef DEBUG
+    debugPrintf("Initializing hash tables");
+#endif
     // Initialize gst hash table
     initGst();
 
     // Initialize global offset table
     initGot();
 
+#ifdef DEBUG
+    debugPrintf("Reading files");
+#endif
     // Build module table
     for (int i = 0; i < fileCount; i++) {
         readFile(argv[optind + i]);
@@ -77,8 +86,14 @@ int main(int argc, char *argv[]) {
 
     // Add got segment first
     Segment *gotSegment = NULL;
+#ifdef DEBUG
+    debugPrintf("Building got segment");
+#endif
     buildGotSegment(gotSegment);
 
+#ifdef DEBUG
+    debugPrintf("Building segment groups from modules");
+#endif
     // Pass 1: Build module segments into segment groups
     while(module != NULL) {
         addModuleSegmentsToGroups(module);
@@ -86,18 +101,33 @@ int main(int argc, char *argv[]) {
         module = module->next;
     }
 
+#ifdef DEBUG
+    debugPrintf("Allocating storage");
+#endif
     // Pass 2: Compute addresses and sizes
     allocateStorage(codeBaseAddress, pageAlignData, endSymbol);
 
+#ifdef DEBUG
+    debugPrintf("Checking for undefined symbols");
+#endif
     // Symbol value resolution
     checkUndefinedSymbols();
+#ifdef DEBUG
+    debugPrintf("Resolving symbols");
+#endif
     resolveSymbolValues();
 
     if (mapFileName != NULL) {
+#ifdef DEBUG
+        debugPrintf("Printing map file to %s", mapFileName);
+#endif
         printMapFile(mapFileName);
     }
 
-    relocateModules(gotSegment);
+#ifdef DEBUG
+    debugPrintf("Relocate");
+#endif
+    relocate(gotSegment);
 
     writeExecutable(outfile, startSymbol);
     return 0;
@@ -168,3 +198,15 @@ void safeFree(void *p) {
     }
     free(p);
 }
+
+#ifdef DEBUG
+void debugPrintf(char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    printf("\x1b[33m");
+    vprintf(fmt, ap);
+    printf("\x1b[0m\n");
+    va_end(ap);
+}
+#endif

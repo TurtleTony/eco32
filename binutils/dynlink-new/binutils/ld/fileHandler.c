@@ -67,16 +67,22 @@ void readFile(char *inputPath) {
             if (strcmp(strstr(inputPath, ".o"), ".o") != 0) {
                 warning("file extension for object files should be '.o'");
             }
+#ifdef DEBUG
+            debugPrintf("  Parsing object file '%s'", inputPath);
+#endif
             parseObjectFile(inputPath, 0, inputFile, inputPath);
             break;
         case ARCH_MAGIC:
             if (strcmp(strstr(inputPath, ".a"), ".a") != 0) {
                 warning("file extension for archive files should be '.a'");
             }
+#ifdef DEBUG
+            debugPrintf("  Parsing archive file '%s'", inputPath);
+#endif
             parseArchiveFile(inputFile, inputPath);
             break;
         default:
-            error("unknown magic number '%x' in input file '%s'", magicNumber, inputPath);
+            error("unknown magic number '%X' in input file '%s'", magicNumber, inputPath);
     }
 
     fclose(inputFile);
@@ -251,6 +257,15 @@ void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *
     }
 }
 
+#ifdef DEBUG
+void showSegmentAttr(unsigned int attr, char *res) {
+    res[0] = (attr & SEG_ATTR_A) ? 'A' : '-';
+    res[1] = (attr & SEG_ATTR_P) ? 'P' : '-';
+    res[2] = (attr & SEG_ATTR_W) ? 'W' : '-';
+    res[3] = (attr & SEG_ATTR_X) ? 'X' : '-';
+    res[4] = '\0';
+}
+#endif
 
 void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath) {
     Segment *seg;
@@ -263,6 +278,9 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
         error("cannot seek segment table in input file '%s'", inputPath);
     }
 
+#ifdef DEBUG
+    debugPrintf("    Parsing segments in module '%s'", module->name);
+#endif
     for (int i = 0; i < nsegs; i++) {
         seg = &module->segs[i];
         if (fread(&segmentRecord, sizeof(SegmentRecord), 1, inputFile) != 1) {
@@ -278,9 +296,20 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
         seg->addr = segmentRecord.addr;
         seg->size = segmentRecord.size;
         seg->attr = segmentRecord.attr;
+#ifdef DEBUG
+        char attr[10];
+        showSegmentAttr(seg->attr, attr);
+        debugPrintf("      %s size: 0x%08X, attr: [%s]", seg->name, seg->size, attr);
+#endif
     }
 }
 
+#ifdef DEBUG
+void showSymbolAttr(unsigned int attr, char *res) {
+    res[0] = (attr & SYM_ATTR_U) ? 'U' : 'D';
+    res[1] = '\0';
+}
+#endif
 
 void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath) {
     Symbol *moduleSymbol;
@@ -293,6 +322,9 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *
         error("cannot seek symbol table in input file '%s'", inputPath);
     }
 
+#ifdef DEBUG
+    debugPrintf("    Parsing symbols in module '%s'", module->name);
+#endif
     for (int i = 0; i < nsyms; i++) {
         if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
             error("cannot read symbol %d in input file '%s'", i, inputPath);
@@ -311,6 +343,11 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *
 
         // Symbol name resolution
         putSymbolIntoGst(moduleSymbol, i);
+#ifdef DEBUG
+        char attr[10];
+        showSymbolAttr(moduleSymbol->attr, attr);
+        debugPrintf("      %s : 0x%08X, (%s) [%s]", moduleSymbol->name, moduleSymbol->val, module->segs[moduleSymbol->seg].name, attr);
+#endif
     }
 }
 

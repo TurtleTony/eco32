@@ -37,6 +37,8 @@ void error(char *fmt, ...);
 void warning(char *fmt, ...);
 void *safeAlloc(unsigned int size);
 void safeFree(void *p);
-
+#ifdef DEBUG
+void debugPrintf(char *fmt, ...);
+#endif
 
 #endif //ECO32_LD_H

@@ -36,6 +36,9 @@ void printMapFile(char *fileName) {
 
 
 void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
+#ifdef DEBUG
+    debugPrintf("      Putting symbol '%s' into GST", moduleSymbol->name);
+#endif
     int ret;
     khiter_t k;
     // Put symbol into table as key
@@ -98,12 +101,31 @@ void checkUndefinedSymbols(void) {
 
 void resolveSymbolValues(void) {
     Symbol *entry;
+#ifdef DEBUG
+    Module *module;
+    Segment *segment;
+    int value;
+#endif
 
     kh_foreach_value(gst, entry, {
+#ifdef DEBUG
+    module = entry->mod;
+    segment = entry->seg != -1 ? &entry->mod->segs[entry->seg] : NULL;
+    value = entry->val;
+#endif
         // only change non-absolute symbols
         if (entry->seg != -1) {
             // Add segment base address to symbol value
             entry->val += entry->mod->segs[entry->seg].addr;
+#ifdef DEBUG
+            debugPrintf("  Resolving symbol '%s' (%s, %s) from 0x%08X to 0x%08X",
+                        entry->name, module->name, segment->name, value, entry->val);
+#endif
         }
+#ifdef DEBUG
+        else {
+            debugPrintf("  Skipping absolute symbol '%s' (%s)", entry->name, module->name);
+        }
+#endif
     });
 }
