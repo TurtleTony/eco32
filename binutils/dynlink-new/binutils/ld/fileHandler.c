@@ -346,7 +346,8 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *
 #ifdef DEBUG
         char attr[10];
         showSymbolAttr(moduleSymbol->attr, attr);
-        debugPrintf("      %s : 0x%08X, (%s) [%s]", moduleSymbol->name, moduleSymbol->val, module->segs[moduleSymbol->seg].name, attr);
+        debugPrintf("        %s : 0x%08X, (%s) [%s]", moduleSymbol->name, moduleSymbol->val,
+                    moduleSymbol->seg != -1 ? module->segs[moduleSymbol->seg].name : "absolute", attr);
 #endif
     }
 }
