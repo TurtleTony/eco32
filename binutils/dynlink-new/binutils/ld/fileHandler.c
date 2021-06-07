@@ -580,6 +580,8 @@ void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned in
 
         outFileHeader->nrels++;
     }
+
+    *outFileOffset += sizeof(RelocRecord) * outFileHeader->nrels;
 }
 
 
