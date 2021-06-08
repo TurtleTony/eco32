@@ -392,6 +392,10 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
             picMode = 1;
         }
 
+        if ((reloc->typ & ~RELOC_SYM) == RELOC_W32) {
+            w32Count++;
+        }
+
         if ((reloc->typ & ~RELOC_SYM) == RELOC_GP_L16) {
             if (!(reloc->typ & RELOC_SYM)) {
                 error("got pointer relocation has to reference symbol");
@@ -566,29 +570,38 @@ void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *
 }
 
 
+void writeERW32Relocation(unsigned int loc, EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
+    RelocRecord relocRecord;
+    relocRecord.loc = loc;
+    relocRecord.seg = -1;
+    relocRecord.typ = RELOC_ER_W32;
+    relocRecord.ref = -1;
+    relocRecord.add = 0;
+
+    conv4FromEcoToNative((unsigned char *) &relocRecord.loc);
+    conv4FromEcoToNative((unsigned char *) &relocRecord.seg);
+    conv4FromEcoToNative((unsigned char *) &relocRecord.typ);
+    conv4FromEcoToNative((unsigned char *) &relocRecord.ref);
+    conv4FromEcoToNative((unsigned char *) &relocRecord.add);
+
+    if (fwrite(&relocRecord, sizeof(RelocRecord), 1, outputFile) != 1) {
+        error("cannot write loader relocation to file '%s'", outputPath);
+    }
+
+    outFileHeader->nrels++;
+}
+
+
 void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile, char *outputPath) {
     outFileHeader->orels = *outFileOffset;
     outFileHeader->nrels = 0;
 
     for (int i = 0; i < gotSegment->size; i+=4) {
-        RelocRecord relocRecord;
-        relocRecord.loc = gotSegment->addr + i;
-        relocRecord.seg = -1;
-        relocRecord.typ = RELOC_ER_W32;
-        relocRecord.ref = -1;
-        relocRecord.add = 0;
+        writeERW32Relocation(gotSegment->addr + i, outFileHeader, outputFile, outputPath);
+    }
 
-        conv4FromEcoToNative((unsigned char *) &relocRecord.loc);
-        conv4FromEcoToNative((unsigned char *) &relocRecord.seg);
-        conv4FromEcoToNative((unsigned char *) &relocRecord.typ);
-        conv4FromEcoToNative((unsigned char *) &relocRecord.ref);
-        conv4FromEcoToNative((unsigned char *) &relocRecord.add);
-
-        if (fwrite(&relocRecord, sizeof(RelocRecord), 1, outputFile) != 1) {
-            error("cannot write loader relocation to file '%s'", outputPath);
-        }
-
-        outFileHeader->nrels++;
+    for (int i = 0; i < w32Count; i ++) {
+        writeERW32Relocation(w32Addresses[i], outFileHeader, outputFile, outputPath);
     }
 
     *outFileOffset += sizeof(RelocRecord) * outFileHeader->nrels;

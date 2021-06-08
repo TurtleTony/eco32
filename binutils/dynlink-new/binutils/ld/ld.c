@@ -7,6 +7,10 @@
 #include "khash.h"
 #include <string.h>
 
+
+int picMode = 0;
+int w32Count = 0;
+
 int main(int argc, char *argv[]) {
 
     char *outfile = DEFAULT_OUT_FILE_NAME;

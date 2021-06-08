@@ -5,7 +5,20 @@
 #include "relocation.h"
 
 
+int *w32Addresses;
+int w32Counter = 0;
+
 void relocate(Segment *gotSegment) {
+    if (picMode) {
+#ifdef DEBUG
+        debugPrintf("  Creating an array to store w32 virtual addresses with size %d",
+                    sizeof(unsigned int) * w32Count);
+#endif
+        // Create array to store w32 relocations for creating ER_W32 relocations later
+        w32Addresses = safeAlloc(sizeof(unsigned int) * w32Count);
+    }
+
+
     Module *module = firstModule();
 
     while (module != NULL) {
@@ -97,6 +110,10 @@ void relocate(Segment *gotSegment) {
                     relocType = "R26";
                     break;
                 case RELOC_W32:
+                    if (picMode) {
+                        w32Addresses[w32Counter++] = relocAddress;
+                    }
+
                     mask = 0xFFFFFFFF;
                     relocType = "W32";
                     break;
