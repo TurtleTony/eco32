@@ -84,14 +84,17 @@ int main(int argc, char *argv[]) {
     // Storage allocation
     Module *module = firstModule();
 
+    Segment *gotSegment = NULL;
     // Add got segment first
+    if (picMode) {
 #ifdef DEBUG
-    debugPrintf("Building got segment");
+        debugPrintf("Building got segment");
 #endif
-    Segment *gotSegment = buildGotSegment();
+        gotSegment = buildGotSegment();
 #ifdef DEBUG
-    debugPrintf("Built got segment with size 0x%08X", gotSegment->size);
+        debugPrintf("Built got segment with size 0x%08X", gotSegment->size);
 #endif
+    }
 
 #ifdef DEBUG
     debugPrintf("Building segment groups from modules");

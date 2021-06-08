@@ -430,7 +430,10 @@ void writeExecutable(char *outputPath, char *startSymbolName, Segment *gotSegmen
     writeStrings(&outFileHeader, &outFileOffset, outputFile, outputPath);
 
     writeSegments(&outFileHeader, &outFileOffset, outputFile, outputPath);
-    writeRelocations(gotSegment, &outFileHeader, &outFileOffset, outputFile, outputPath);
+
+    if (picMode) {
+        writeRelocations(gotSegment, &outFileHeader, &outFileOffset, outputFile, outputPath);
+    }
 
     writeFinalHeader(startSymbol->val, &outFileHeader, outputFile, outputPath);
 
