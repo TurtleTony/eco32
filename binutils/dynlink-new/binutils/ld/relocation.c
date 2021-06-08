@@ -54,15 +54,22 @@ void relocate(Segment *gotSegment) {
             // How to relocate
             switch (reloc->typ & ~RELOC_SYM) {
                 case RELOC_H16:
+                    if (picMode) {
+                        error("illegal H16 relocation in PIC mode");
+                    }
                     refValue >>= 16;
                     mask = 0x0000FFFF;
                     relocType = "H16";
                     break;
                 case RELOC_L16:
+                    if (picMode) {
+                        error("illegal L16 relocation in PIC mode");
+                    }
                     mask = 0x0000FFFF;
                     relocType = "L16";
                     break;
                 case RELOC_R16:
+                    //TODO: throw error if on link unit extern symbol
                     refValue -= pc;
                     refValue /= 4;
 
@@ -76,6 +83,7 @@ void relocate(Segment *gotSegment) {
                     relocType = "R16";
                     break;
                 case RELOC_R26:
+                    //TODO: throw error if on link unit extern symbol
                     refValue -= pc;
                     refValue /= 4;
 
