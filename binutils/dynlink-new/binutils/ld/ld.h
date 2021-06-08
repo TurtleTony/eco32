@@ -27,6 +27,8 @@
 #define DEFAULT_START_SYMBOL	"_start"
 #define DEFAULT_END_SYMBOL      "_end"
 
+int picMode = 0;
+
 /**************************************************************/
 /** Helper methods **/
 
