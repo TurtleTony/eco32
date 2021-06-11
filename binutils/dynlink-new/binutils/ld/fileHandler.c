@@ -616,7 +616,7 @@ void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
             error("cannot write symbol %s to file '%s'", entry->name, outputPath);
         }
 
-        outFileHeader->nsegs++;
+        outFileHeader->nsyms++;
     });
 
     *outFileOffset += sizeof(SymbolRecord) * outFileHeader->nsegs;
