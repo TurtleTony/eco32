@@ -16,6 +16,7 @@
 /** Phase I **/
 
 
+void initLinkerModule();
 void addModuleSegmentsToGroups(struct module *mod);
 void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup);
 void addPartialToGroup(PartialSegment *partialSegment, SegmentGroup *segmentGroup);

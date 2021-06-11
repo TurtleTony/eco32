@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Storage allocation
+    initLinkerModule();
     Module *module = firstModule();
 
     Segment *gotSegment = NULL;

@@ -49,8 +49,22 @@ TotalSegment *newTotal(char *name, unsigned int attr) {
     return total;
 }
 
+// Initialize a fake "linker module" to associate this partial with
+// This is necessary because there is no "real" module for the got
 Module *linkerModule;
 
+void initLinkerModule() {
+    linkerModule = safeAlloc(sizeof(Module));
+    linkerModule->name = "linker";
+    linkerModule->data = NULL;
+    linkerModule->strs = NULL;
+    linkerModule->nsegs = 0;
+    linkerModule->segs = NULL;
+    linkerModule->nsyms = 1;
+    linkerModule->syms = safeAlloc(sizeof(Symbol *));
+    linkerModule->nrels = 0;
+    linkerModule->rels = NULL;
+}
 /**************************************************************/
 /** PHASE I **/
 /**************************************************************/
@@ -129,19 +143,6 @@ void addTotalToGroup(TotalSegment *totalSegment, SegmentGroup *segmentGroup) {
 
 Segment *buildGotSegment(void) {
     Segment *gotSegment = newSegment(".got", gotSize(), ATTR_APW);
-
-    // Initialize a fake "linker module" to associate this partial with
-    // This is necessary because there is no "real" module for the got
-    linkerModule = safeAlloc(sizeof(Module));
-    linkerModule->name = "linker";
-    linkerModule->data = NULL;
-    linkerModule->strs = NULL;
-    linkerModule->nsegs = 0;
-    linkerModule->segs = NULL;
-    linkerModule->nsyms = 0;
-    linkerModule->syms = safeAlloc(sizeof(Symbol *));
-    linkerModule->nrels = 0;
-    linkerModule->rels = NULL;
 
     PartialSegment *partial = newPartial(linkerModule, gotSegment);
     addPartialToGroup(partial, &apwGroup);
