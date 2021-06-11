@@ -230,6 +230,8 @@ void parseEofHeader(EofHeader *hdr, unsigned int fileOffset, FILE *inputFile, ch
     conv4FromEcoToNative((unsigned char *) &hdr->ostrs);
     conv4FromEcoToNative((unsigned char *) &hdr->sstrs);
     conv4FromEcoToNative((unsigned char *) &hdr->entry);
+    conv4FromEcoToNative((unsigned char *) &hdr->olibs);
+    conv4FromEcoToNative((unsigned char *) &hdr->nlibs);
     if (hdr->magic != EOF_R_MAGIC) {
         error("wrong magic number in input file '%s'", inputPath);
     }
@@ -628,6 +630,8 @@ void writeFinalHeader(unsigned int codeEntry, EofHeader *outFileHeader, FILE *ou
     conv4FromNativeToEco((unsigned char *) &outFileHeader->ostrs);
     conv4FromNativeToEco((unsigned char *) &outFileHeader->sstrs);
     conv4FromNativeToEco((unsigned char *) &outFileHeader->entry);
+    conv4FromNativeToEco((unsigned char *) &outFileHeader->olibs);
+    conv4FromNativeToEco((unsigned char *) &outFileHeader->nlibs);
 
     if (fwrite(outFileHeader, sizeof(EofHeader), 1, outputFile) != 1) {
         error("cannot write output file final header to file '%s'", outputPath);
