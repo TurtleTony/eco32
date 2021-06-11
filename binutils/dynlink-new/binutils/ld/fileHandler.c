@@ -387,7 +387,7 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
         reloc->ref = relocRecord.ref;
         reloc->add = relocRecord.add;
 
-        if (((reloc->typ & ~RELOC_SYM) == RELOC_GA_L16) || (reloc->typ & ~RELOC_SYM) == RELOC_GA_H16) {
+        if (!picMode && (((reloc->typ & ~RELOC_SYM) == RELOC_GA_L16) || (reloc->typ & ~RELOC_SYM) == RELOC_GA_H16)) {
 #ifdef DEBUG
             debugPrintf("    Found PIC relocation: Entering PIC mode");
 #endif
