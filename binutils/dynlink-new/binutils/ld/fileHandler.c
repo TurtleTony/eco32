@@ -613,7 +613,7 @@ void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
         conv4FromNativeToEco((unsigned char *) &symbolRecord.attr);
 
         if (fwrite(&symbolRecord, sizeof(SymbolRecord), 1, outputFile) != 1) {
-            error("cannot write symbol %d to file '%s'", i, outputPath);
+            error("cannot write symbol %s to file '%s'", entry->name, outputPath);
         }
 
         outFileHeader->nsegs++;
@@ -624,7 +624,7 @@ void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
 
 
 void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *outputFile, char *outputPath) {
-    while (totalSeg != NULL){
+    while (totalSeg != NULL) {
         SegmentRecord segmentRecord;
         segmentRecord.name = totalSeg->nameOffs;
         segmentRecord.offs = totalSeg->dataOffs;
