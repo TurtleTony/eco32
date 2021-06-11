@@ -56,6 +56,7 @@ int main(int argc, char *argv[]) {
                 break;
             case 'l':
                 createLibrary = 1;
+                break;
             case '?':
                 printUsage(argv[0]);
                 return 1;
@@ -174,6 +175,7 @@ void printUsage(char *arg0) {
     fprintf(stderr, "         [-e <symbol>]    set bss end symbol\n");
     fprintf(stderr, "         [-o <outfile>]   set output file name\n");
     fprintf(stderr, "         [-m <mapfile>]   set map file name\n");
+    fprintf(stderr, "         [-l]             create a library file\n");
     fprintf(stderr, "         <infile> ...     input file names\n");
 }
 
