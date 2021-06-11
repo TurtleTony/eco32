@@ -7,10 +7,10 @@ all:
 		$(MAKE) -C appdev all
 
 run:		all
-		$(MAKE) -C appdev run
+		$(MAKE) -C testdev run
 
 clean:
-		$(MAKE) -C appdev clean
+		$(MAKE) -C testdev clean
 		$(MAKE) -C libdev clean
 		rm -rf include
 		rm -rf lib
