@@ -1,0 +1,1 @@
+This text checks that the linker writes a table of all exported symbols into the .dso file when linking a dynamic library
