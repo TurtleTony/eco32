@@ -441,7 +441,38 @@ void writeExecutable(char *outputPath, char *startSymbolName, Segment *gotSegmen
         writeRelocations(gotSegment, &outFileHeader, &outFileOffset, outputFile, outputPath);
     }
 
-    writeFinalHeader(startSymbol->val, &outFileHeader, outputFile, outputPath);
+    writeFinalHeader(0, startSymbol->val, &outFileHeader, outputFile, outputPath);
+
+    fclose(outputFile);
+}
+
+
+void writeLibrary(char *outputPath, Segment *gotSegment) {
+    FILE *outputFile;
+
+    EofHeader outFileHeader = {};
+    unsigned int outFileOffset = 0;
+
+    if (!picMode) {
+        error("trying to create shared library without pic");
+    }
+
+    outputFile = fopen(outputPath, "w");
+    if (outputFile == NULL) {
+        error("cannot open output file '%s'", outputPath);
+    }
+
+    writeDummyHeader(&outFileHeader, &outFileOffset, outputFile, outputPath);
+
+    writeData(&outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeStrings(&outFileHeader, &outFileOffset, outputFile, outputPath);
+
+    writeSegments(&outFileHeader, &outFileOffset, outputFile, outputPath);
+    writeSymbols(&outFileHeader, &outFileOffset, outputFile, outputPath);
+
+    writeRelocations(gotSegment, &outFileHeader, &outFileOffset, outputFile, outputPath);
+
+    writeFinalHeader(1, 0, &outFileHeader, outputFile, outputPath);
 
     fclose(outputFile);
 }
@@ -512,6 +543,8 @@ void writeStrings(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
     writeStringsTotal(outFileHeader, apwGroup.firstTotal, outputFile, outputPath);
     writeStringsTotal(outFileHeader, awGroup.firstTotal, outputFile, outputPath);
 
+    writeStringsSymbols(outFileHeader, outputFile, outputPath);
+
     *outFileOffset += outFileHeader->sstrs;
 }
 
@@ -533,6 +566,20 @@ void writeStringsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *o
 }
 
 
+void writeStringsSymbols(EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
+    Symbol *entry;
+    kh_foreach_value(getGst(), entry, {
+        entry->nameOffs = outFileHeader->sstrs;
+        unsigned int size = strlen(entry->name) + 1;
+
+        if (fwrite(entry->name, size, 1, outputFile) != 1) {
+            error("cannot write symbol string to file '%s'", outputPath);
+        }
+        outFileHeader->sstrs += size;
+    });
+}
+
+
 void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
                    char *outputPath) {
     outFileHeader->osegs = *outFileOffset;
@@ -544,6 +591,35 @@ void writeSegments(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *
     writeSegmentsTotal(outFileHeader, awGroup.firstTotal, outputFile, outputPath);
 
     *outFileOffset += sizeof(SegmentRecord) * outFileHeader->nsegs;
+}
+
+
+void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *outputFile,
+                   char *outputPath) {
+    outFileHeader->osyms = *outFileOffset;
+    outFileHeader->nsyms = 0;
+
+    Symbol *entry;
+    SymbolRecord symbolRecord;
+    kh_foreach_value(getGst(), entry, {
+        symbolRecord.name = entry->nameOffs;
+        symbolRecord.val = entry->val;
+        symbolRecord.seg = entry->seg;
+        symbolRecord.attr = entry->attr;
+
+        conv4FromNativeToEco((unsigned char *) &symbolRecord.name);
+        conv4FromNativeToEco((unsigned char *) &symbolRecord.val);
+        conv4FromNativeToEco((unsigned char *) &symbolRecord.seg);
+        conv4FromNativeToEco((unsigned char *) &symbolRecord.attr);
+
+        if (fwrite(&symbolRecord, sizeof(SymbolRecord), 1, outputFile) != 1) {
+            error("cannot write symbol %d to file '%s'", i, outputPath);
+        }
+
+        outFileHeader->nsegs++;
+    });
+
+    *outFileOffset += sizeof(SymbolRecord) * outFileHeader->nsegs;
 }
 
 
@@ -610,12 +686,12 @@ void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned in
 }
 
 
-void writeFinalHeader(unsigned int codeEntry, EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
+void writeFinalHeader(int isLibrary, unsigned int codeEntry, EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
     if (fseek(outputFile, 0, SEEK_SET) != 0) {
         error("cannot seek final header in file '%s'", outputPath);
     }
 
-    outFileHeader->magic = EOF_X_MAGIC;
+    outFileHeader->magic = isLibrary ? EOF_D_MAGIC : EOF_X_MAGIC;
     outFileHeader->entry = codeEntry;
 
     conv4FromNativeToEco((unsigned char *) &outFileHeader->magic);

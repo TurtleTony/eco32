@@ -129,3 +129,7 @@ void resolveSymbolValues(void) {
 #endif
     });
 }
+
+khash_t(globalSymbolTable) *getGst() {
+    return gst;
+}

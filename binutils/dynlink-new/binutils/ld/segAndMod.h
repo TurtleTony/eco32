@@ -43,6 +43,8 @@ typedef struct symbol {
     Module *mod;        /* Module where symbol is located */
     int seg;			/* the symbol's segment, -1: absolute */
     unsigned int attr;		/* symbol attributes */
+    /* internal variables */
+    unsigned int nameOffs; /* name offset instring space (for generating library symbol table) */
 } Symbol;
 
 typedef struct reloc {

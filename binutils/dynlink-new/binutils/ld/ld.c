@@ -18,6 +18,7 @@ int main(int argc, char *argv[]) {
     unsigned int codeBaseAddress = DEFAULT_CODE_BASE;
     char *startSymbol = DEFAULT_START_SYMBOL;
     char *endSymbol = DEFAULT_END_SYMBOL;
+    int createLibrary = 0; // Default false
 
     int c;
     char *endPtr, *mapFileName;
@@ -25,7 +26,7 @@ int main(int argc, char *argv[]) {
     debugPrintf("Parsing command-line options");
 #endif
     // Get-opt keeps this easily expandable for the future
-    while ((c = getopt(argc, argv, "dc:s:e:o:m:?")) != -1) {
+    while ((c = getopt(argc, argv, "dc:s:e:o:m:l?")) != -1) {
         switch (c) {
             case 'd':
                 pageAlignData = 0;
@@ -53,6 +54,8 @@ int main(int argc, char *argv[]) {
             case 'e':
                 endSymbol = optarg;
                 break;
+            case 'l':
+                createLibrary = 1;
             case '?':
                 printUsage(argv[0]);
                 return 1;
@@ -64,6 +67,7 @@ int main(int argc, char *argv[]) {
     int fileCount = argc - optind;
     if (fileCount == 0) {
         // Require at least one infile
+
         printUsage(argv[0]);
         return 1;
     }
@@ -141,7 +145,11 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
     debugPrintf("Write output file");
 #endif
-    writeExecutable(outfile, startSymbol, gotSegment);
+    if (createLibrary) {
+        writeLibrary(outfile, gotSegment);
+    } else {
+        writeExecutable(outfile, startSymbol, gotSegment);
+    }
     return 0;
 }
 

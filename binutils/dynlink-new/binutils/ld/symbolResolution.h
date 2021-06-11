@@ -18,6 +18,6 @@ void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber);
 Symbol *getSymbolFromGst(char *symbol);
 void checkUndefinedSymbols(void);
 void resolveSymbolValues(void);
-
+khash_t(globalSymbolTable) *getGst();
 
 #endif //ECO32_SYMBOLRESOLUTION_H
