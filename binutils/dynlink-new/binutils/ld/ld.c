@@ -27,6 +27,13 @@ int main(int argc, char *argv[]) {
 #endif
     // Get-opt keeps this easily expandable for the future
     while ((c = getopt(argc, argv, "dc:s:e:o:m:l?")) != -1) {
+#ifdef DEBUG
+        if (optarg) {
+            debugPrintf("  -%c %s", c, optarg);
+        } else {
+            debugPrintf("  -%c", c);
+        }
+#endif
         switch (c) {
             case 'd':
                 pageAlignData = 0;
