@@ -123,6 +123,13 @@ void resolveSymbolValues(void) {
 #endif
 
     kh_foreach_value(gst, entry, {
+        // Skip link unit extern symbols as we cannot resolve their values yet
+        if ((entry->attr & SYM_ATTR_X) != 0) {
+#ifdef DEBUG
+            debugPrintf("  Skipping extern symbol '%s'", entry->name);
+#endif
+            continue;
+        }
 #ifdef DEBUG
     module = entry->mod;
     segment = entry->seg != -1 ? &entry->mod->segs[entry->seg] : NULL;
