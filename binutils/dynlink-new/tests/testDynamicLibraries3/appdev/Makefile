@@ -6,7 +6,7 @@ ECO32_BUILD = ../../../../../../build
 BUILD = ../../../build
 
 CC = $(BUILD)/bin/lcc
-CFLAGS = -A -Wo-nostdinc -Wo-nostdlib
+CFLAGS = -A -Wo-nostdinc -Wo-nostdlib -Wo-pic
 AS = $(BUILD)/bin/as
 LD = $(BUILD)/bin/ld
 LOAD = $(BUILD)/bin/load
