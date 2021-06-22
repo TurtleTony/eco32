@@ -60,6 +60,8 @@ void relocate(Segment *gotSegment) {
 #ifdef DEBUG
             debugPrintf("    %s @ 0x%08X (vaddr @ 0x%08X), data: 0x%08X",
                         relocSegment->name, reloc->loc, relocAddress, read4FromEco(relocTarget));
+            debugPrintf("      %s %s + 0x%08X",
+                        relocSymType, relocSymRef, reloc->add);
 #endif
             int refValue = refAddress + reloc->add;
             Symbol *symbol;
@@ -157,8 +159,8 @@ void relocate(Segment *gotSegment) {
             }
             write4ToEco(relocTarget, (refValue & mask) | (read4FromEco(relocTarget) & ~mask));
 #ifdef DEBUG
-            debugPrintf("      %s with %s %s + 0x%08X: 0x%08X",
-                        relocType, relocSymType, relocSymRef, reloc->add,
+            debugPrintf("      %s --> 0x%08X",
+                        relocType,
                         (refValue & mask) | (read4FromEco(relocTarget) & ~mask));
 #endif
         }
