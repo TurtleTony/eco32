@@ -84,7 +84,7 @@ void readFile(char *inputPath) {
 #ifdef DEBUG
             debugPrintf("  Parsing object file '%s'", inputPath);
 #endif
-            parseObjectFile(inputPath, 0, inputFile, inputPath);
+            parseObjectFile(basename(inputPath), 0, inputFile, inputPath);
             break;
         case ARCH_MAGIC:
             if (strcmp(strstr(inputPath, ".a"), ".a") != 0) {
