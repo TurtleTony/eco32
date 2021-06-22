@@ -2,7 +2,7 @@
 # Makefile for application development
 #
 
-ECO32_BUILD = ../../../../../../build
+ECO32_BUILD = ../../../../../build
 BUILD = ../../../build
 
 CC = $(BUILD)/bin/lcc
