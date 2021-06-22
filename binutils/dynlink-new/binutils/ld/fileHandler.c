@@ -81,6 +81,15 @@ void readFile(char *inputPath) {
 #endif
             parseArchiveFile(inputFile, inputPath);
             break;
+        case EOF_D_MAGIC:
+            if (strcmp(strstr(inputPath, ".dso"), ".dso") != 0) {
+                warning("file extension for dynamic library files should be '.dso'");
+            }
+#ifdef DEBUG
+            debugPrintf("  Parsing dynamic library file '%s'", inputPath);
+#endif
+            parseDynamicLibraryFile(inputFile, inputPath);
+            break;
         default:
             error("unknown magic number '%X' in input file '%s'", magicNumber, inputPath);
     }
@@ -98,7 +107,7 @@ void parseObjectFile(char *moduleName, unsigned int fileOffset, FILE *objectFile
 
     // Parse metadata first
     parseData(mod, fileOffset + hdr.odata, hdr.sdata, objectFile, inputPath);
-    parseStrings(mod, fileOffset + hdr.ostrs, hdr.sstrs, objectFile, inputPath);
+    parseStrings(&mod->strs, fileOffset + hdr.ostrs, hdr.sstrs, objectFile, inputPath);
 
     parseSegments(mod, fileOffset + hdr.osegs, hdr.nsegs, objectFile, inputPath);
     parseSymbols(mod, fileOffset + hdr.osyms, hdr.nsyms, objectFile, inputPath);
@@ -136,6 +145,17 @@ void parseArchiveFile(FILE *archiveFile, char *inputPath) {
     } while (moduleWasNeeded);
     safeFree(mods);
     safeFree(strs);
+}
+
+
+void parseDynamicLibraryFile(FILE *libraryFile, char *inputPath) {
+    EofHeader hdr;
+    char *strs;
+
+    parseEofHeader(&hdr, 0, libraryFile, inputPath);
+    parseStrings(&strs, hdr.ostrs, hdr.sstrs, libraryFile, inputPath);
+
+    parseDynamicLibrarySymbols(strs, hdr.osyms, hdr.nsyms, libraryFile, inputPath);
 }
 
 
@@ -232,7 +252,7 @@ void parseEofHeader(EofHeader *hdr, unsigned int fileOffset, FILE *inputFile, ch
     conv4FromEcoToNative((unsigned char *) &hdr->entry);
     conv4FromEcoToNative((unsigned char *) &hdr->olibs);
     conv4FromEcoToNative((unsigned char *) &hdr->nlibs);
-    if (hdr->magic != EOF_R_MAGIC) {
+    if (hdr->magic != EOF_R_MAGIC && hdr->magic != EOF_D_MAGIC) {
         error("wrong magic number in input file '%s'", inputPath);
     }
 }
@@ -251,14 +271,14 @@ void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inp
 }
 
 
-void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath) {
+void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath) {
     if (fseek(inputFile, ostrs, SEEK_SET) != 0) {
         error("cannot seek string space in input file '%s'", inputPath);
     }
 
-    module->strs = safeAlloc(sstrs);
+    *strs = safeAlloc(sstrs);
 
-    if (fread(module->strs, sstrs, 1, inputFile) != 1) {
+    if (fread(*strs, sstrs, 1, inputFile) != 1) {
         error("cannot read string space in input file '%s'", inputPath);
     }
 }
@@ -405,6 +425,47 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 
             putEntryIntoGot(module->syms[reloc->ref]);
         }
+    }
+}
+
+
+void parseDynamicLibrarySymbols(char *strs, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath) {
+    Symbol *moduleSymbol;
+    SymbolRecord symbolRecord;
+
+    if (fseek(inputFile, osyms, SEEK_SET) != 0) {
+        error("cannot seek symbol table in input file '%s'", inputPath);
+    }
+
+#ifdef DEBUG
+    debugPrintf("    Parsing symbols in library '%s'", inputPath);
+#endif
+    for (int i = 0; i < nsyms; i++) {
+        if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
+            error("cannot read symbol %d in input file '%s'", i, inputPath);
+        }
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.name);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.val);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.seg);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.attr);
+
+        moduleSymbol = safeAlloc(sizeof(Symbol));
+        moduleSymbol->name = strs + symbolRecord.name;
+        moduleSymbol->val = symbolRecord.val;
+        moduleSymbol->mod = NULL;
+        moduleSymbol->seg = symbolRecord.seg;
+        moduleSymbol->attr = (symbolRecord.attr | SYM_ATTR_X);
+
+        // Symbol name resolution (only add exported symbols)
+        if (!(moduleSymbol->attr & SYM_ATTR_U)) {
+            putSymbolIntoGst(moduleSymbol, i);
+        }
+#ifdef DEBUG
+        char attr[10];
+        showSymbolAttr(moduleSymbol->attr, attr);
+        debugPrintf("        %s : 0x%08X, (%s) [%s]", moduleSymbol->name, moduleSymbol->val,
+                    moduleSymbol->seg != -1 ? "some segment" : "absolute", attr);
+#endif
     }
 }
 

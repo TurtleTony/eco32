@@ -23,6 +23,7 @@
 void readFile(char *inputPath);
 void parseObjectFile(char *moduleName, unsigned int fileOffset, FILE *objectFile, char *inputPath);
 void parseArchiveFile(FILE *archiveFile, char *inputPath);
+void parseDynamicLibraryFile(FILE *libraryFile, char *inputPath);
 
 void parseArchiveHeader(ArchHeader *hdr, FILE *inputFile, char *inputPath);
 char *parseArchiveStrings(unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
@@ -31,11 +32,13 @@ int moduleNeeded(ModuleRecord *moduleRecord, char *strs);
 
 void parseEofHeader(EofHeader *hdr, unsigned int fileOffset, FILE *inputFile, char *inputPath);
 void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inputFile, char *inputPath);
-void parseStrings(Module *module, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
+void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
 
 void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath);
 void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath);
 void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath);
+
+void parseDynamicLibrarySymbols(char *strs, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath);
 
 Module *firstModule();
 
