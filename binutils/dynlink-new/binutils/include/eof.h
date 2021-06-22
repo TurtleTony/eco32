@@ -46,6 +46,8 @@ typedef struct {
   unsigned int ostrs;		/* offset of string space in file */
   unsigned int sstrs;		/* size of string space in file */
   unsigned int entry;		/* entry point (if executable) */
+  unsigned int olibs;		/* offset of dynlib names in string space */
+  unsigned int nlibs;		/* number of dynlib names */
 } EofHeader;
 
 

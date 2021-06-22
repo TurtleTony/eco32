@@ -152,7 +152,7 @@ void dumpBytes(unsigned int totalSize) {
 }
 
 
-void dumpString(unsigned int offset) {
+unsigned int dumpString(unsigned int offset) {
   long pos;
   int c;
 
@@ -162,6 +162,7 @@ void dumpString(unsigned int offset) {
   }
   while (1) {
     c = fgetc(inFile);
+    offset++;
     if (c == EOF) {
       error("unexpected end of file");
     }
@@ -171,6 +172,7 @@ void dumpString(unsigned int offset) {
     fputc(c, stdout);
   }
   fseek(inFile, pos, SEEK_SET);
+  return offset;
 }
 
 
@@ -219,11 +221,15 @@ void readHeader(void) {
   conv4FromEcoToNative((unsigned char *) &inFileHeader.ostrs);
   conv4FromEcoToNative((unsigned char *) &inFileHeader.sstrs);
   conv4FromEcoToNative((unsigned char *) &inFileHeader.entry);
+  conv4FromEcoToNative((unsigned char *) &inFileHeader.olibs);
+  conv4FromEcoToNative((unsigned char *) &inFileHeader.nlibs);
 }
 
 
 void dumpHeader(void) {
   char *type;
+  unsigned int offset;
+  int i;
 
   if (inFileHeader.magic != EOF_R_MAGIC &&
       inFileHeader.magic != EOF_X_MAGIC &&
@@ -254,6 +260,13 @@ void dumpHeader(void) {
   printf("    offset of string space    : 0x%08X\n", inFileHeader.ostrs);
   printf("    size of string space      : 0x%08X\n", inFileHeader.sstrs);
   printf("    entry point               : 0x%08X\n", inFileHeader.entry);
+  printf("    dynamic libs needed       : %10u\n", inFileHeader.nlibs);
+  offset = inFileHeader.olibs;
+  for (i = 0; i < inFileHeader.nlibs; i++) {
+    printf("        name = ");
+    offset = dumpString(offset);
+    printf("\n");
+  }
 }
 
 
