@@ -39,6 +39,20 @@ Module *firstModule() {
 }
 
 
+char *basename(char *path) {
+    char *basename;
+    basename = path + strlen(path);
+    while (basename != path && *basename != '/') {
+        basename--;
+    }
+    if (*basename == '/') {
+        basename++;
+    }
+
+    return basename;
+}
+
+
 /**************************************************************/
 /** PARSING INPUTFILE **/
 /**************************************************************/
@@ -148,9 +162,24 @@ void parseArchiveFile(FILE *archiveFile, char *inputPath) {
 }
 
 
+Library *firstLibrary = NULL;
+Library *lastLibrary = NULL;
+
 void parseDynamicLibraryFile(FILE *libraryFile, char *inputPath) {
     EofHeader hdr;
     char *strs;
+
+    Library *library = safeAlloc(sizeof(Library));
+
+    library->name = basename(inputPath);
+
+    if (firstLibrary == NULL) {
+        firstLibrary = library;
+        lastLibrary = library;
+    } else {
+        lastLibrary->next = library;
+        lastLibrary = library;
+    }
 
     parseEofHeader(&hdr, 0, libraryFile, inputPath);
     parseStrings(&strs, hdr.ostrs, hdr.sstrs, libraryFile, inputPath);
@@ -605,6 +634,7 @@ void writeStrings(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
     writeStringsTotal(outFileHeader, awGroup.firstTotal, outputFile, outputPath);
 
     writeStringsSymbols(outFileHeader, outputFile, outputPath);
+    writeStringsLibs(outFileHeader, outputFile, outputPath);
 
     *outFileOffset += outFileHeader->sstrs;
 }
@@ -638,6 +668,25 @@ void writeStringsSymbols(EofHeader *outFileHeader, FILE *outputFile, char *outpu
         }
         outFileHeader->sstrs += size;
     });
+}
+
+
+void writeStringsLibs(EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
+    Library *library = firstLibrary;
+
+    outFileHeader->olibs = outFileHeader->sstrs;
+
+    while (library != NULL) {
+        unsigned int size = strlen(library->name) + 1;
+
+        if (fwrite(library->name, size, 1, outputFile) != 1) {
+            error("cannot write library name %s to file '%s'", library->name, outputPath);
+        }
+        outFileHeader->sstrs += size;
+        outFileHeader->nlibs++;
+
+        library = library->next;
+    }
 }
 
 
