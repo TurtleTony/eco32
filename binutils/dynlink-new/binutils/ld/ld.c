@@ -4,12 +4,11 @@
  */
 
 #include "ld.h"
-#include "khash.h"
-#include <string.h>
 
 
 int picMode = 0;
 int w32Count = 0;
+int createLibrary = 0;
 
 int main(int argc, char *argv[]) {
 
@@ -18,23 +17,39 @@ int main(int argc, char *argv[]) {
     unsigned int codeBaseAddress = DEFAULT_CODE_BASE;
     char *startSymbol = DEFAULT_START_SYMBOL;
     char *endSymbol = DEFAULT_END_SYMBOL;
-    int createLibrary = 0; // Default false
 
-    int c;
+    int c, option_index;
     char *endPtr, *mapFileName;
 #ifdef DEBUG
     debugPrintf("Parsing command-line options");
 #endif
+    static struct option long_options[] = {
+            {"shared",  no_argument, &createLibrary, 1},
+            {"pic",     no_argument, &picMode, 1}
+    };
+
     // Get-opt keeps this easily expandable for the future
-    while ((c = getopt(argc, argv, "dc:s:e:o:m:l?")) != -1) {
+    while ((c = getopt_long_only(argc, argv, "dc:s:e:o:m:l?", long_options, &option_index)) != -1) {
 #ifdef DEBUG
-        if (optarg) {
-            debugPrintf("  -%c %s", c, optarg);
+        if (c == 0) {
+            // flag option
+            if (optarg) {
+                debugPrintf("  -%s %s", long_options[option_index].name, optarg);
+            } else {
+                debugPrintf("  -%s", long_options[option_index].name);
+            }
         } else {
-            debugPrintf("  -%c", c);
+            if (optarg) {
+                debugPrintf("  -%c %s", c, optarg);
+            } else {
+                debugPrintf("  -%c", c);
+            }
         }
 #endif
         switch (c) {
+            case 0:
+                // set flag option
+                break;
             case 'd':
                 pageAlignData = 0;
                 break;

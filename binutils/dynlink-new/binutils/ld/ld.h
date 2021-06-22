@@ -10,7 +10,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
-#include <unistd.h>
+#include <getopt.h>
+
+#include "khash.h"
 
 #include "symbolResolution.h"
 #include "globalOffsetTable.h"
