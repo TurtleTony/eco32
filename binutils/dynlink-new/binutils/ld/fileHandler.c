@@ -164,7 +164,7 @@ int moduleNeeded(ModuleRecord *moduleRecord, char *strs) {
 
     for (int i = 0; i < moduleRecord->nsym; i++) {
         Symbol *entry = getSymbolFromGst(fsym);
-        if (entry != NULL && (entry->attr & SYM_ATTR_U) != 0) {
+        if (entry != NULL && (entry->attr & (SYM_ATTR_U | SYM_ATTR_X)) != 0) {
             /* Symbol is undefined */
             return 1;
         }
