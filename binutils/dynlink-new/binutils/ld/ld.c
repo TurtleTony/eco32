@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
     relocate(gotSegment);
 
 #ifdef DEBUG
-    debugPrintf("Write output file");
+    debugPrintf("Write output file '%s'", outfile);
 #endif
     if (createLibrary) {
         writeLibrary(outfile, gotSegment);
