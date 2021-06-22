@@ -6,6 +6,8 @@
 #define ECO32_SYMBOLRESOLUTION_H
 
 
+#define SYM_ATTR_X  0x100   /* link unit extern symbol */
+
 #include "khash.h"
 #include "segAndMod.h"
 KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *);
@@ -14,7 +16,7 @@ KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *);
 
 void initGst(void);
 void printMapFile(char *fileName);
-void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber);
+void putSymbolIntoGst(Symbol *symbol, unsigned int symbolNumber);
 Symbol *getSymbolFromGst(char *symbol);
 void checkUndefinedSymbols(void);
 void resolveSymbolValues(void);

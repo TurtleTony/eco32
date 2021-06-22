@@ -35,14 +35,14 @@ void printMapFile(char *fileName) {
 }
 
 
-void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
+void putSymbolIntoGst(Symbol *symbol, unsigned int symbolNumber) {
 #ifdef DEBUG
-    debugPrintf("      Putting symbol '%s' into GST", moduleSymbol->name);
+    debugPrintf("      Putting symbol '%s' into GST", symbol->name);
 #endif
     int ret;
     khiter_t k;
     // Put symbol into table as key
-    k = kh_put(globalSymbolTable, gst, moduleSymbol->name, &ret);
+    k = kh_put(globalSymbolTable, gst, symbol->name, &ret);
     // Get pointer to value
     Symbol *tableEntry = kh_value(gst, k);
 
@@ -50,29 +50,44 @@ void putSymbolIntoGst(Symbol *moduleSymbol, unsigned int symbolNumber) {
     switch (ret) {
         // Symbol already in gst
         case 0:
-            if ((moduleSymbol->attr & SYM_ATTR_U) == 0) {
-                // Module symbol is defined
+            if ((symbol->attr & SYM_ATTR_U) == 0) {
+                // Symbol is defined
                 if ((tableEntry->attr & SYM_ATTR_U) == 0) {
                     // Gst entry is also defined
-                    error("symbol '%s' in module '%s' defined more than once\n"
-                          "       (previous definition is in module '%s')",
-                          moduleSymbol->name, moduleSymbol->mod->name, tableEntry->mod->name);
+                    if ((symbol->attr & SYM_ATTR_X) == 0) {
+                        // Symbol is link unit local
+                        if ((tableEntry->attr & SYM_ATTR_X) == 0) {
+                            // Gst entry is also link unit local
+                            error("symbol '%s' in module '%s' defined more than once\n"
+                                  "       (previous definition is in module '%s')",
+                                  symbol->name, symbol->mod->name, tableEntry->mod->name);
+                        }
+                    } else {
+                        // Ignore link unit extern duplicated symbol definition
+                        return;
+                    }
                 }
-                tableEntry->mod = moduleSymbol->mod;
-                tableEntry->seg = moduleSymbol->seg;
-                tableEntry->val = moduleSymbol->val;
-                tableEntry->attr = moduleSymbol->attr;
+                // Override library table entry with module symbol
+
+                tableEntry->mod = symbol->mod;
+                tableEntry->seg = symbol->seg;
+                tableEntry->val = symbol->val;
+                tableEntry->attr = symbol->attr;
             }
             break;
         // Symbol not yet in bucket; put into gst
         case 1:
-            kh_value(gst, k) = moduleSymbol;
+            kh_value(gst, k) = symbol;
             break;
         default:
-            error("Error writing symbol %s into gst", moduleSymbol->name);
+            error("Error writing symbol %s into gst", symbol->name);
     }
 
-    moduleSymbol->mod->syms[symbolNumber] = kh_value(gst, k);
+    // Unless symbol is extern
+    if (!(symbol->attr & SYM_ATTR_X)) {
+        // Save pointer to gst entry in module
+        symbol->mod->syms[symbolNumber] = kh_value(gst, k);
+    }
 }
 
 
