@@ -6,6 +6,8 @@
 #include "load.h"
 
 
+unsigned char *memory;
+
 int main(int argc, char *argv[]) {
     unsigned int ldOff = 0;
     unsigned int memorySizeMB = DEFAULT_MEMSIZE;
@@ -100,6 +102,97 @@ void loadExecutable(char *execFileName, unsigned int ldOff) {
 #endif
     FILE *execFile;
 
+
+    execFile = fopen(execFileName, "r");
+    if (execFile == NULL) {
+        error("cannot open exectuable file '%s'", execFileName);
+    }
+
+    char *name = basename(execFileName);
+    loadLinkUnit(name, EOF_X_MAGIC, execFile, execFileName, ldOff);
+    fclose(execFile);
+}
+
+void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char *inputPath, unsigned int ldOff) {
+#ifdef DEBUG
+    debugPrintf("  Loading link unit '%s' from file '%s'", name, inputPath);
+#endif
+    EofHeader eofHeader;
+    parseEofHeader(&eofHeader, expectedMagic, inputFile, inputPath);
+
+    char *strs;
+
+    parseStrings(&strs, eofHeader.ostrs, eofHeader.sstrs, inputFile, inputPath);
+
+#ifdef DEBUG
+    debugPrintf("    Scanning %d libraries specified in link unit '%s'", eofHeader.nlibs, name);
+#endif
+    char *libStrs = strs + eofHeader.olibs;
+
+    for (int i = 0; i < eofHeader.nlibs; i++) {
+        char *libName = libStrs;
+#ifdef DEBUG
+        debugPrintf("      Adding library '%s' to queue", libName);
+#endif
+        enqueue(libName);
+
+        while (*libStrs++ != '\0') ;
+    }
+}
+
+
+void parseEofHeader(EofHeader *hdr, unsigned int expectedMagic, FILE *inputFile, char *inputPath) {
+    if (fseek(inputFile, 0, SEEK_SET) != 0) {
+        error("cannot seek object file header in input file '%s'", inputPath);
+    }
+    if (fread(hdr, sizeof(EofHeader), 1, inputFile) != 1) {
+        error("cannot read object file header in input file '%s'", inputPath);
+    }
+    conv4FromEcoToNative((unsigned char *) &hdr->magic);
+    conv4FromEcoToNative((unsigned char *) &hdr->osegs);
+    conv4FromEcoToNative((unsigned char *) &hdr->nsegs);
+    conv4FromEcoToNative((unsigned char *) &hdr->osyms);
+    conv4FromEcoToNative((unsigned char *) &hdr->nsyms);
+    conv4FromEcoToNative((unsigned char *) &hdr->orels);
+    conv4FromEcoToNative((unsigned char *) &hdr->nrels);
+    conv4FromEcoToNative((unsigned char *) &hdr->odata);
+    conv4FromEcoToNative((unsigned char *) &hdr->sdata);
+    conv4FromEcoToNative((unsigned char *) &hdr->ostrs);
+    conv4FromEcoToNative((unsigned char *) &hdr->sstrs);
+    conv4FromEcoToNative((unsigned char *) &hdr->entry);
+    conv4FromEcoToNative((unsigned char *) &hdr->olibs);
+    conv4FromEcoToNative((unsigned char *) &hdr->nlibs);
+    if (hdr->magic != expectedMagic) {
+        error("unexpected magic number '0x%08X' in input file '%s', expected '0x%08X'", inputPath, hdr->magic, expectedMagic);
+    }
+}
+
+
+void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath) {
+    if (fseek(inputFile, ostrs, SEEK_SET) != 0) {
+        error("cannot seek string space in input file '%s'", inputPath);
+    }
+
+    *strs = safeAlloc(sstrs);
+
+    if (fread(*strs, sstrs, 1, inputFile) != 1) {
+        error("cannot read string space in input file '%s'", inputPath);
+    }
+}
+
+
+
+char *basename(char *path) {
+    char *basename;
+    basename = path + strlen(path);
+    while (basename != path && *basename != '/') {
+        basename--;
+    }
+    if (*basename == '/') {
+        basename++;
+    }
+
+    return basename;
 }
 
 
