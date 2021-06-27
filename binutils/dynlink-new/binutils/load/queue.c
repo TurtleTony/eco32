@@ -16,7 +16,15 @@ void enqueue(char *entry) {
     }
 
     if (end >= queue + size) {
-        error("queue overflow, implement dynamic size?");
+        int newSize = size * 2;
+#ifdef DEBUG
+        debugPrintf("      Queue overflow for size '%d', allocating more memory for new size '%d'", size, newSize);
+#endif
+        char ** newQueue = safeAlloc(newSize);
+        memcpy(newQueue, queue, size);
+
+        size = newSize;
+        queue = newQueue;
     }
 
 

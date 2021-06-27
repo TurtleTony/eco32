@@ -5,7 +5,7 @@
 #ifndef ECO32_QUEUE_H
 #define ECO32_QUEUE_H
 
-#define DEFAULT_SIZE 100
+#define DEFAULT_SIZE 10 // Define default number of queue entries
 
 #include "load.h"
 
