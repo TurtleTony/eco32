@@ -27,7 +27,20 @@ void enqueue(char *entry) {
         queue = newQueue;
     }
 
-
+    // Skip duplicate entries
+    char **scanner = queue;
+    while (scanner < end) {
+#ifdef DEBUG
+        debugPrintf("      Comparing scanner string '%s' with entry '%s'", *scanner, entry);
+#endif
+        if (strcmp(*(scanner), entry) == 0) {
+#ifdef DEBUG
+      debugPrintf("      Skipping duplicate entry '%s'", *scanner);
+#endif
+            return;
+        }
+        scanner++;
+    }
 
     *(end++) = entry;
 }
