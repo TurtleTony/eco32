@@ -1,398 +1,167 @@
 /*
  * load.c -- ECO32 loader
+ * Created by tony on 27.06.21.
  */
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-
-#include "eof.h"
-
-
-/**************************************************************/
-
-
-void error(char *fmt, ...) {
-  va_list ap;
-
-  va_start(ap, fmt);
-  printf("error: ");
-  vprintf(fmt, ap);
-  printf("\n");
-  va_end(ap);
-  exit(1);
-}
-
-
-/**************************************************************/
-
-
-unsigned int read4(unsigned char *p) {
-  return (unsigned int) p[0] << 24 |
-         (unsigned int) p[1] << 16 |
-         (unsigned int) p[2] <<  8 |
-         (unsigned int) p[3] <<  0;
-}
-
-
-void write4(unsigned char *p, unsigned int data) {
-  p[0] = data >> 24;
-  p[1] = data >> 16;
-  p[2] = data >>  8;
-  p[3] = data >>  0;
-}
-
-
-/**************************************************************/
-
-
-#define LDERR_NONE	0	/* no error */
-#define LDERR_SFH	1	/* cannot seek to file header */
-#define LDERR_RFH	2	/* cannot read file header */
-#define LDERR_WMN	3	/* wrong magic number in file header */
-#define LDERR_SEG	4	/* no segments */
-#define LDERR_MEM	5	/* no memory */
-#define LDERR_SSE	6	/* cannot seek to segment entry */
-#define LDERR_RSE	7	/* cannot read segment entry */
-#define LDERR_SSD	8	/* cannot seek to segment data */
-#define LDERR_RSD	9	/* cannot read segment data */
-#define LDERR_WBF	10	/* cannot write binary file */
-#define LDERR_SNO	11	/* segments not ordered, cannot fill gap */
-#define LDERR_SRE	12	/* cannot seek to relocation entry */
-#define LDERR_RRE	13	/* cannot read relocation entry */
-#define LDERR_ILR	14	/* illegal load-time relocation */
-
-
-typedef struct {
-  unsigned int vaddr;
-  unsigned int size;
-  unsigned int attr;
-  unsigned char *data;
-} SegmentInfo;
-
-
-int segCmp(const void *entry1, const void *entry2) {
-  unsigned int vaddr1;
-  unsigned int vaddr2;
-
-  vaddr1 = ((SegmentInfo *) entry1)->vaddr;
-  vaddr2 = ((SegmentInfo *) entry2)->vaddr;
-  if (vaddr1 < vaddr2) {
-    return -1;
-  }
-  if (vaddr1 > vaddr2) {
-    return 1;
-  }
-  return 0;
-}
-
-
-int loadObj(FILE *inFile, FILE *outFile,
-            int verbose, unsigned int loadOffs,
-            int sort, int fill, int clear) {
-  EofHeader fileHeader;
-  unsigned int osegs;
-  unsigned int nsegs;
-  unsigned int orels;
-  unsigned int nrels;
-  unsigned int odata;
-  unsigned int entry;
-  SegmentInfo *allSegs;
-  int numSegs;
-  int i;
-  SegmentRecord segRec;
-  unsigned int offs;
-  unsigned int addr;
-  unsigned int size;
-  unsigned int attr;
-  unsigned char *data;
-  RelocRecord relRec;
-  unsigned int loc;
-  int seg;
-  int typ;
-  int ref;
-  int add;
-  unsigned int word;
-  unsigned int vaddr;
-  int j;
-
-  /* read and inspect file header */
-  if (fseek(inFile, 0, SEEK_SET) < 0) {
-    return LDERR_SFH;
-  }
-  if (fread(&fileHeader, sizeof(EofHeader), 1, inFile) != 1) {
-    return LDERR_RFH;
-  }
-  if (read4((unsigned char *) &fileHeader.magic) != EOF_X_MAGIC) {
-    return LDERR_WMN;
-  }
-  osegs = read4((unsigned char *) &fileHeader.osegs);
-  nsegs = read4((unsigned char *) &fileHeader.nsegs);
-  orels = read4((unsigned char *) &fileHeader.orels);
-  nrels = read4((unsigned char *) &fileHeader.nrels);
-  odata = read4((unsigned char *) &fileHeader.odata);
-  entry = read4((unsigned char *) &fileHeader.entry);
-  if (verbose) {
-    printf("info: entry point      : 0x%08X\n", entry);
-    printf("      num segments     : %d\n", nsegs);
-    printf("      segment table at : 0x%08X bytes file offset\n", osegs);
-    printf("      num relocs       : %d\n", nrels);
-    printf("      reloc table at   : 0x%08X bytes file offset\n", orels);
-    printf("      segment data at  : 0x%08X bytes file offset\n", odata);
-  }
-  if (nsegs == 0) {
-    return LDERR_SEG;
-  }
-  allSegs = malloc(nsegs * sizeof(SegmentInfo));
-  if (allSegs == NULL) {
-    return LDERR_MEM;
-  }
-  /* read segments */
-  numSegs = 0;
-  for (i = 0; i < nsegs; i++) {
-    if (verbose) {
-      printf("processing segment entry %d\n", i);
-    }
-    if (fseek(inFile, osegs + i * sizeof(SegmentRecord), SEEK_SET) < 0) {
-      return LDERR_SSE;
-    }
-    if (fread(&segRec, sizeof(SegmentRecord), 1, inFile) != 1) {
-      return LDERR_RSE;
-    }
-    offs = read4((unsigned char *) &segRec.offs);
-    addr = read4((unsigned char *) &segRec.addr);
-    size = read4((unsigned char *) &segRec.size);
-    attr = read4((unsigned char *) &segRec.attr);
-    if (verbose) {
-      printf("    offset  : 0x%08X\n", offs);
-      printf("    address : 0x%08X\n", addr);
-      printf("    size    : 0x%08X\n", size);
-      printf("    attr    : 0x%08X\n", attr);
-    }
-    if (attr & SEG_ATTR_P) {
-      data = malloc(size);
-      if (data == NULL) {
-        return LDERR_MEM;
-      }
-      if (fseek(inFile, odata + offs, SEEK_SET) < 0) {
-        return LDERR_SSD;
-      }
-      if (fread(data, 1, size, inFile) != size) {
-        return LDERR_RSD;
-      }
-      if (verbose) {
-        printf("    segment of 0x%08X bytes read, vaddr = 0x%08X\n",
-               size, addr);
-      }
-    } else {
-      data = NULL;
-    }
-    allSegs[i].vaddr = addr;
-    allSegs[i].size = size;
-    allSegs[i].attr = attr;
-    allSegs[i].data = data;
-    numSegs++;
-  }
-  /* read relocations */
-  for (i = 0; i < nrels; i++) {
-    if (verbose) {
-      printf("processing relocation entry %d\n", i);
-    }
-    if (fseek(inFile, orels + i * sizeof(RelocRecord), SEEK_SET) < 0) {
-      return LDERR_SRE;
-    }
-    if (fread(&relRec, sizeof(RelocRecord), 1, inFile) != 1) {
-      return LDERR_RRE;
-    }
-    loc = read4((unsigned char *) &relRec.loc);
-    seg = read4((unsigned char *) &relRec.seg);
-    typ = read4((unsigned char *) &relRec.typ);
-    ref = read4((unsigned char *) &relRec.ref);
-    add = read4((unsigned char *) &relRec.add);
-    if (verbose) {
-      printf("    loc : 0x%08X\n", loc);
-      printf("    seg : %d\n", seg);
-      printf("    typ : %d\n", typ);
-      printf("    ref : %d\n", ref);
-      printf("    add : %d\n", add);
-    }
-    if (seg != -1 || typ != RELOC_ER_W32 || ref != -1 || add != 0) {
-      return LDERR_ILR;
-    }
-    /*
-     * Since loc is a virtual address, we have to search for the proper
-     * segment in which to apply the relocation. In a real loader, this
-     * is not necessary: just apply the relocation in memory at loc.
-     */
-    for (seg = 0; seg < numSegs; seg++) {
-      if (loc >= allSegs[seg].vaddr &&
-          loc < allSegs[seg].vaddr + allSegs[seg].size) {
-        break;
-      }
-    }
-    if (seg == numSegs) {
-      return LDERR_ILR;
-    }
-    word = read4(allSegs[seg].data + (loc - allSegs[seg].vaddr));
-    word += loadOffs;
-    write4(allSegs[seg].data + (loc - allSegs[seg].vaddr), word);
-  }
-  /* possibly sort segments */
-  if (sort) {
-    qsort(allSegs, numSegs, sizeof(SegmentInfo), segCmp);
-  }
-  /* write segments */
-  vaddr = allSegs[0].vaddr;
-  for (i = 0; i < numSegs; i++) {
-    if (!(allSegs[i].attr & SEG_ATTR_A)) {
-      continue;
-    }
-    if (allSegs[i].size == 0) {
-      continue;
-    }
-    if (fill) {
-      /* fill inter-segment gap */
-      if (vaddr > allSegs[i].vaddr) {
-        /* segments not ordered, cannot fill gap */
-        return LDERR_SNO;
-      }
-      while (vaddr < allSegs[i].vaddr) {
-        if (fputc(0, outFile) == EOF) {
-          return LDERR_WBF;
-        }
-        vaddr++;
-      }
-    } else {
-      /* do not fill inter-segment gap */
-      vaddr = allSegs[i].vaddr;
-    }
-    size = allSegs[i].size;
-    if (allSegs[i].attr & SEG_ATTR_P) {
-      if (fwrite(allSegs[i].data, 1, size, outFile) != size) {
-        return LDERR_WBF;
-      }
-    } else {
-      if (clear) {
-        /* clear non-present segment */
-        for (j = 0; j < size; j++) {
-          if (fputc(0, outFile) == EOF) {
-            return LDERR_WBF;
-          }
-        }
-      }
-    }
-    vaddr += size;
-  }
-  return LDERR_NONE;
-}
-
-
-/**************************************************************/
-
-
-char *loadResult[] = {
-  /*  0 */  "no error",
-  /*  1 */  "cannot seek to file header",
-  /*  2 */  "cannot read file header",
-  /*  3 */  "wrong magic number in file header",
-  /*  4 */  "no segments",
-  /*  5 */  "no memory",
-  /*  6 */  "cannot seek to segment entry",
-  /*  7 */  "cannot read segment entry",
-  /*  8 */  "cannot seek to segment data",
-  /*  9 */  "cannot read segment data",
-  /* 10 */  "cannot write binary file",
-  /* 11 */  "segments not ordered, cannot fill gap",
-  /* 12 */  "cannot seek to relocation entry",
-  /* 13 */  "cannot read relocation entry",
-  /* 14 */  "illegal load-time relocation",
-};
-
-int maxResults = sizeof(loadResult) / sizeof(loadResult[0]);
-
-
-void usage(char *myself) {
-  printf("usage: %s [-p] [-v] [-l <offset>] <object file> <binary file>\n",
-         myself);
-  exit(1);
-}
+#include "load.h"
 
 
 int main(int argc, char *argv[]) {
-  int pack;
-  int verbose;
-  unsigned int loadOffs;
-  char *inName;
-  char *outName;
-  int i;
-  char *endptr;
-  FILE *inFile;
-  FILE *outFile;
-  int result;
+    unsigned int ldOff = 0;
+    unsigned int memorySizeMB = DEFAULT_MEMSIZE;
 
-  pack = 0;
-  verbose = 0;
-  loadOffs = 0;
-  inName = NULL;
-  outName = NULL;
-  for (i = 1; i < argc; i++) {
-    if (*argv[i] == '-') {
-      /* option */
-      if (strcmp(argv[i], "-p") == 0) {
-        pack = 1;
-      } else
-      if (strcmp(argv[i], "-v") == 0) {
-        verbose = 1;
-      } else
-      if (strcmp(argv[i], "-l") == 0) {
-        if (++i == argc) {
-          error("option '-l' is missing an offset");
+    char *execFileName = NULL;
+    char *binFileName = NULL;
+
+    int c, option_index;
+    char *endPtr;
+#ifdef DEBUG
+    debugPrintf("Parsing command-line options");
+#endif
+    static struct option long_options[] = {
+    };
+
+    // Get-opt keeps this easily expandable for the future
+    while ((c = getopt_long_only(argc, argv, "l:m:?", long_options, &option_index)) != -1) {
+#ifdef DEBUG
+        if (c == 0) {
+            // flag option
+            if (optarg) {
+                debugPrintf("  -%s %s", long_options[option_index].name, optarg);
+            } else {
+                debugPrintf("  -%s", long_options[option_index].name);
+            }
+        } else {
+            if (optarg) {
+                debugPrintf("  -%c %s", c, optarg);
+            } else {
+                debugPrintf("  -%c", c);
+            }
         }
-        loadOffs = strtoul(argv[i], &endptr, 0);
-        if (*endptr != '\0') {
-          error("option '-l' has an invalid offset");
+#endif
+        switch (c) {
+            case 0:
+                // set flag option
+                break;
+            case 'l':
+                ldOff = strtoul(optarg, &endPtr, 0);
+                if (*endPtr != '\0') {
+                    error("option '-l' has illegal load offset");
+                }
+                break;
+            case 'm':
+                memorySizeMB = strtoul(optarg, &endPtr, 0);
+                if (*endPtr != '\0' ||
+                    memorySizeMB <= 0 ||
+                    memorySizeMB > MAX_MEMSIZE) {
+                    error("option '-m' has illegal memory size");
+                }
+                break;
+            case '?':
+                printUsage(argv[0]);
+                return 1;
+            default:
+                return 1;
         }
-      } else {
-        usage(argv[0]);
-      }
-    } else {
-      /* file */
-      if (inName == NULL) {
-        inName = argv[i];
-      } else
-      if (outName == NULL) {
-        outName = argv[i];
-      } else {
-        error("more than two files specified");
-      }
     }
-  }
-  if (inName == NULL) {
-    error("no object file specified");
-  }
-  if (outName == NULL) {
-    error("no binary file specified");
-  }
-  inFile = fopen(inName, "rb");
-  if (inFile == NULL) {
-    error("cannot open object file '%s'", inName);
-  }
-  outFile = fopen(outName, "wb");
-  if (outFile == NULL) {
-    error("cannot open binary file '%s'", outName);
-  }
-  result = loadObj(inFile, outFile,
-                   verbose, loadOffs,
-                   0, !pack, !pack);
-  if (verbose || result != 0) {
-    printf("%s: %s\n",
-           result == 0 ? "result" : "error",
-           result >= maxResults ? "unknown error number" :
-                                  loadResult[result]);
-  }
-  fclose(inFile);
-  fclose(outFile);
-  return result;
+
+    int fileCount = argc - optind;
+    if (fileCount != 2) {
+        // Require exactly two file names
+
+        printUsage(argv[0]);
+        return 1;
+    }
+
+    execFileName = argv[optind];
+    binFileName = argv[optind + 1];
+
+#ifdef DEBUG
+    debugPrintf("Initializing %u MB of pseudo-randomized memory", memorySizeMB);
+#endif
+    unsigned int memorySizeBytes = memorySizeMB << 20;
+
+    memory = safeAlloc(memorySizeBytes);
+    for (int i = 0; i < memorySizeBytes; i++) {
+        memory[i] = rand();
+    }
+
+    loadExecutable(execFileName, ldOff);
+
+
+//    writeBinary(binFileName);
+    return 0;
 }
+
+
+void loadExecutable(char *execFileName, unsigned int ldOff) {
+#ifdef DEBUG
+    debugPrintf("Loading executable '%s' with offset '0x%08X'", execFileName, ldOff);
+#endif
+    FILE *execFile;
+
+}
+
+
+void printUsage(char *myself) {
+    printf("usage: %s [options] <executable> <binary>\n", myself);
+    printf("valid options are:\n");
+    printf("    -l <n>         load with n bytes offset\n");
+    printf("    -m <n>         set maximum memory size to <n> MB\n");
+    exit(1);
+}
+
+
+void error(char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    fprintf(stderr, "error: ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "!\n");
+    va_end(ap);
+    exit(1);
+}
+
+
+void warning(char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    fprintf(stderr, "warning: ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "!\n");
+    va_end(ap);
+}
+
+
+void *safeAlloc(unsigned int size) {
+    void *p;
+
+    p = malloc(size);
+    if (p == NULL) {
+        error("unable to allocate %d bytes", size);
+    }
+    return p;
+}
+
+
+void safeFree(void *p) {
+    if (p == NULL) {
+        error("tried to free NULL pointer");
+    }
+    free(p);
+}
+
+#ifdef DEBUG
+void debugPrintf(char *fmt, ...) {
+    va_list ap;
+
+    va_start(ap, fmt);
+    printf("\x1b[33m");
+    vprintf(fmt, ap);
+    printf("\x1b[0m\n");
+    va_end(ap);
+}
+#endif
+

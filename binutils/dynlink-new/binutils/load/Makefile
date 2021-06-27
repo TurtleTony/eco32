@@ -5,7 +5,7 @@
 BUILD = ../../build
 
 CC = gcc
-CFLAGS = -g -Wall -I../include
+CFLAGS = -g -Wall -I../include -DDEBUG
 LDFLAGS = -g
 LDLIBS = -lm
 
