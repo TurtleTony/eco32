@@ -21,14 +21,22 @@ void printMapFile(char *fileName) {
 
     Symbol *entry;
     kh_foreach_value(gst, entry, {
-        fprintf(file,
-                "%-24s  0x%08X  %-12s  %s\n",
-                entry->name,
-                entry->val,
-                entry->seg == -1 ?
-                "*ABS*" : entry->mod->segs[entry->seg].name,
-                entry->mod->name
-        );
+        if (entry->attr & SYM_ATTR_X) {
+            fprintf(file,
+                    "%-24s  0x%08X  %-12s  *extern*\n",
+                    entry->name,
+                    entry->val,
+                    entry->seg == -1 ?
+                    "*ABS*" : "*N/A*");
+        } else {
+            fprintf(file,
+                    "%-24s  0x%08X  %-12s  %s\n",
+                    entry->name,
+                    entry->val,
+                    entry->seg == -1 ?
+                    "*ABS*" : entry->mod->segs[entry->seg].name,
+                    entry->mod->name);
+        }
     });
 
     fclose(file);
