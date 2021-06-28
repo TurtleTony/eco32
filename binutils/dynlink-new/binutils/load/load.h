@@ -29,6 +29,7 @@ void loadLibrary(char *name, unsigned int ldOff);
 
 void parseEofHeader(EofHeader *hdr, unsigned int expectedMagic, FILE *inputFile, char *inputPath);
 void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
+void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath, char *strs);
 
 char *basename(char *path);
 

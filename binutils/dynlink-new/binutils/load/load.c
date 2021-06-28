@@ -148,6 +148,19 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
 
         while (*libStrs++ != '\0') ;
     }
+
+#ifdef DEBUG
+    debugPrintf("    Loading '%d' segments from link unit '%s'", eofHeader.nsegs, name);
+#endif
+    SegmentRecord segmentRecord;
+    for (int i = 0; i < eofHeader.nsegs; i++) {
+        parseSegment(&segmentRecord, eofHeader.osegs, i, inputFile, inputPath, strs);
+
+        if (segmentRecord.attr & SEG_ATTR_A){
+            // Allocate memory
+        }
+
+    }
 }
 
 
@@ -206,6 +219,38 @@ void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inp
     }
 }
 
+#ifdef DEBUG
+void showSegmentAttr(unsigned int attr, char *res) {
+    res[0] = (attr & SEG_ATTR_A) ? 'A' : '-';
+    res[1] = (attr & SEG_ATTR_P) ? 'P' : '-';
+    res[2] = (attr & SEG_ATTR_W) ? 'W' : '-';
+    res[3] = (attr & SEG_ATTR_X) ? 'X' : '-';
+    res[4] = '\0';
+}
+#endif
+
+void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int segno, FILE *inputFile, char *inputPath, char *strs) {
+    if (fseek(inputFile, osegs + segno * sizeof(SegmentRecord), SEEK_SET) != 0) {
+        error("cannot seek segment %d in input file '%s'", segno, inputPath);
+    }
+
+#ifdef DEBUG
+    debugPrintf("      Parsing segment '%d'", segno);
+#endif
+    if (fread(segmentRecord, sizeof(SegmentRecord), 1, inputFile) != 1) {
+        error("cannot read segment %d in input file '%s'", segno, inputPath);
+    }
+    conv4FromEcoToNative((unsigned char *) &segmentRecord->name);
+    conv4FromEcoToNative((unsigned char *) &segmentRecord->offs);
+    conv4FromEcoToNative((unsigned char *) &segmentRecord->addr);
+    conv4FromEcoToNative((unsigned char *) &segmentRecord->size);
+    conv4FromEcoToNative((unsigned char *) &segmentRecord->attr);
+#ifdef DEBUG
+        char attr[10];
+        showSegmentAttr(segmentRecord->attr, attr);
+        debugPrintf("        %s size: 0x%08X, attr: [%s]", strs + segmentRecord->name, segmentRecord->size, attr);
+#endif
+}
 
 
 char *basename(char *path) {
