@@ -21,7 +21,7 @@ bottles.bin:	bottles
 		$(LOAD) -l 0xD0000000 -m 32 -d ../lib bottles bottles.bin
 
 bottles:	start.o bottles.o
-		$(LD) -c 0xC0000000 -o bottles \
+		$(LD) -c 0xC0000000 -m bottles.map -o bottles \
 		  start.o bottles.o ../lib/libiolib.dso ../lib/libbiolib.dso
 
 start.o:	start.s
