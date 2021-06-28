@@ -144,9 +144,6 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
 
     for (int i = 0; i < eofHeader.nlibs; i++) {
         char *libName = libStrs;
-#ifdef DEBUG
-        debugPrintf("      Adding library '%s' to queue", libName);
-#endif
         enqueue(libName);
 
         while (*libStrs++ != '\0') ;

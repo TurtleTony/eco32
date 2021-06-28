@@ -30,9 +30,6 @@ void enqueue(char *entry) {
     // Skip duplicate entries
     char **scanner = queue;
     while (scanner < end) {
-#ifdef DEBUG
-        debugPrintf("      Comparing scanner string '%s' with entry '%s'", *scanner, entry);
-#endif
         if (strcmp(*(scanner), entry) == 0) {
 #ifdef DEBUG
       debugPrintf("      Skipping duplicate entry '%s'", *scanner);
@@ -42,6 +39,9 @@ void enqueue(char *entry) {
         scanner++;
     }
 
+#ifdef DEBUG
+    debugPrintf("      Adding library '%s' to queue", entry);
+#endif
     *(end++) = entry;
 }
 
