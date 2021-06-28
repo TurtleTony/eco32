@@ -7,6 +7,7 @@
 
 
 unsigned char *memory;
+char *libraryPath = DEFAULT_LIB_PATH;
 
 int main(int argc, char *argv[]) {
     unsigned int ldOff = 0;
@@ -24,7 +25,7 @@ int main(int argc, char *argv[]) {
     };
 
     // Get-opt keeps this easily expandable for the future
-    while ((c = getopt_long_only(argc, argv, "l:m:?", long_options, &option_index)) != -1) {
+    while ((c = getopt_long_only(argc, argv, "l:m:d:?", long_options, &option_index)) != -1) {
 #ifdef DEBUG
         if (c == 0) {
             // flag option
@@ -58,6 +59,9 @@ int main(int argc, char *argv[]) {
                     memorySizeMB > MAX_MEMSIZE) {
                     error("option '-m' has illegal memory size");
                 }
+                break;
+            case 'd':
+                libraryPath = optarg;
                 break;
             case '?':
                 printUsage(argv[0]);
@@ -110,6 +114,15 @@ void loadExecutable(char *execFileName, unsigned int ldOff) {
 
     char *name = basename(execFileName);
     loadLinkUnit(name, EOF_X_MAGIC, execFile, execFileName, ldOff);
+
+    char *libName;
+    while((libName = dequeue()) != NULL) {
+#ifdef DEBUG
+        debugPrintf("  Dequeueing library '%s'", libName);
+#endif
+        loadLibrary(libName, ldOff);
+    }
+
     fclose(execFile);
 }
 
@@ -138,6 +151,22 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
 
         while (*libStrs++ != '\0') ;
     }
+}
+
+
+void loadLibrary(char *name, unsigned int ldOff) {
+    // Search lib file by name in path
+    char *inputPath = safeAlloc(strlen(libraryPath) + strlen(name));
+    sprintf(inputPath, "%s/%s", libraryPath, name);
+
+    FILE *libFile = fopen(inputPath, "r");
+    if (libFile == NULL) {
+        error("cannot open library file '%s'", inputPath);
+    }
+
+    loadLinkUnit(name, EOF_D_MAGIC, libFile, inputPath, ldOff);
+
+    fclose(libFile);
 }
 
 

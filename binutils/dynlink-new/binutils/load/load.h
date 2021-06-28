@@ -17,13 +17,15 @@
 #include "ecoEndian.h"
 #include "queue.h"
 
-#define MAX_MEMSIZE		512	/* maximum memory size in MB */
-#define DEFAULT_MEMSIZE		4	/* default memory size in MB */
+#define MAX_MEMSIZE		    512	    /* maximum memory size in MB */
+#define DEFAULT_MEMSIZE		4	    /* default memory size in MB */
+#define DEFAULT_LIB_PATH	"."    /* default folder to lookup libraries */
 
 extern unsigned char *memory;
 
 void loadExecutable(char *execFileName, unsigned int ldOff);
 void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char *inputPath, unsigned int ldOff);
+void loadLibrary(char *name, unsigned int ldOff);
 
 void parseEofHeader(EofHeader *hdr, unsigned int expectedMagic, FILE *inputFile, char *inputPath);
 void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
