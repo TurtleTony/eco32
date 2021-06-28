@@ -46,5 +46,9 @@ void enqueue(char *entry) {
 }
 
 char *dequeue(void) {
+    if (start == end) {
+        // Queue empty
+        return NULL;
+    }
     return *(start++);
 }
