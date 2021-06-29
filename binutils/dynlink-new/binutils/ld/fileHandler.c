@@ -734,7 +734,7 @@ void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
         outFileHeader->nsyms++;
     });
 
-    *outFileOffset += sizeof(SymbolRecord) * outFileHeader->nsegs;
+    *outFileOffset += sizeof(SymbolRecord) * outFileHeader->nsyms;
 }
 
 
