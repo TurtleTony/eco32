@@ -21,6 +21,16 @@
 #define DEFAULT_MEMSIZE		4	    /* default memory size in MB */
 #define DEFAULT_LIB_PATH	"."    /* default folder to lookup libraries */
 
+#define PAGE_ALIGN(x)		    (((x) + 0x0FFF) & ~0x0FFF)
+
+
+typedef struct linkUnit {
+    char *name;
+    char *strs;
+    unsigned int virtualStartAddress;
+    struct linkUnit *next;
+} LinkUnit;
+
 extern unsigned char *memory;
 
 void loadExecutable(char *execFileName, unsigned int ldOff);
@@ -31,6 +41,7 @@ void parseEofHeader(EofHeader *hdr, unsigned int expectedMagic, FILE *inputFile,
 void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
 void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath, char *strs);
 
+LinkUnit *newLinkUnit(char *name);
 char *basename(char *path);
 
 void printUsage(char *arg0);

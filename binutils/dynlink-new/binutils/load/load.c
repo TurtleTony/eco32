@@ -6,6 +6,8 @@
 #include "load.h"
 
 
+LinkUnit *listHead = NULL;
+
 unsigned char *memory;
 unsigned char *freeMemory;
 
@@ -95,8 +97,8 @@ int main(int argc, char *argv[]) {
         memory[i] = rand();
     }
 
-    loadExecutable(execFileName, ldOff);
-
+    loadExecutable(execFileName, ldOff); // This in-turn loads library dependencies recursively
+    // TOOD: Execute relocations
 
 //    writeBinary(binFileName);
     return 0;
@@ -133,12 +135,14 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
 #ifdef DEBUG
     debugPrintf("  Loading link unit '%s' from file '%s'", name, inputPath);
 #endif
+    LinkUnit *linkUnit = newLinkUnit(name);
     EofHeader eofHeader;
     parseEofHeader(&eofHeader, expectedMagic, inputFile, inputPath);
 
     char *strs;
 
     parseStrings(&strs, eofHeader.ostrs, eofHeader.sstrs, inputFile, inputPath);
+    linkUnit->strs = strs;
 
 #ifdef DEBUG
     debugPrintf("    Scanning %d libraries specified in link unit '%s'", eofHeader.nlibs, name);
@@ -153,7 +157,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
     }
 
 #ifdef DEBUG
-    debugPrintf("    Loading '%d' segments from link unit '%s'", eofHeader.nsegs, name);
+    debugPrintf("    Loading %d segments from link unit '%s'", eofHeader.nsegs, name);
 #endif
     SegmentRecord segmentRecord;
     unsigned char *dataPointer;
@@ -171,7 +175,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
                  * This way all address calculations are moved down to zero, allowing for easier management */
                 lowestAddress = segmentRecord.addr;
 #ifdef DEBUG
-                debugPrintf("   Set lowest linked address to 0x%08X", lowestAddress);
+                debugPrintf("    Setting lowest linked address to 0x%08X", lowestAddress);
 #endif
             }
             /* This is used to easily access the correct place in the virtual memory */
@@ -193,7 +197,6 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
                 memset(dataPointer, 0, segmentRecord.size);
             }
         }
-
     }
 }
 
@@ -284,6 +287,32 @@ void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int
         showSegmentAttr(segmentRecord->attr, attr);
         debugPrintf("        %s size: 0x%08X, attr: [%s]", strs + segmentRecord->name, segmentRecord->size, attr);
 #endif
+}
+
+
+LinkUnit *newLinkUnit(char *name) {
+    LinkUnit *linkUnit;
+
+    linkUnit = safeAlloc(sizeof(LinkUnit));
+    linkUnit->name = name;
+    linkUnit->strs = NULL;
+    linkUnit->virtualStartAddress = 0;
+    linkUnit->next = NULL;
+
+    if (listHead == NULL) {
+        listHead = linkUnit;
+    } else {
+        LinkUnit *last = listHead;
+        while (1) {
+            if (last->next == NULL) {
+                last->next = linkUnit;
+                break;
+            }
+            last = last->next;
+        }
+    }
+
+    return linkUnit;
 }
 
 
