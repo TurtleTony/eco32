@@ -55,6 +55,9 @@ int main(int argc, char *argv[]) {
                 if (*endPtr != '\0') {
                     error("option '-l' has illegal load offset");
                 }
+                if (ldOff != PAGE_ALIGN(ldOff)) {
+                    warning("load offset is not page aligned. This is likely a mistake");
+                }
                 break;
             case 'm':
                 memorySizeMB = strtoul(optarg, &endPtr, 0);
