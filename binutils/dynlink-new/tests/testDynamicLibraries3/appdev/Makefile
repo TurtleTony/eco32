@@ -18,7 +18,7 @@ run:		bottles.bin
 		$(SIM) -i -l bottles.bin -s 1 -t 0
 
 bottles.bin:	bottles
-		$(LOAD) -l 0xD0000000 -m 32 -d ../lib bottles bottles.bin
+		$(LOAD) -l 0x00001000 -m 32 -d ../lib bottles bottles.bin
 
 bottles:	start.o bottles.o
 		$(LD) -c 0xC0000000 -m bottles.map -o bottles \
