@@ -139,6 +139,8 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
     debugPrintf("  Loading link unit '%s' from file '%s'", name, inputPath);
 #endif
     LinkUnit *linkUnit = newLinkUnit(name);
+    linkUnit->virtualStartAddress = freeMemory - memory;
+
     EofHeader eofHeader;
     parseEofHeader(&eofHeader, expectedMagic, inputFile, inputPath);
 
