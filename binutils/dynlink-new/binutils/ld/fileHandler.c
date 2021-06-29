@@ -771,11 +771,11 @@ void writeERW32Relocation(unsigned int loc, EofHeader *outFileHeader, FILE *outp
     relocRecord.ref = -1;
     relocRecord.add = 0;
 
-    conv4FromEcoToNative((unsigned char *) &relocRecord.loc);
-    conv4FromEcoToNative((unsigned char *) &relocRecord.seg);
-    conv4FromEcoToNative((unsigned char *) &relocRecord.typ);
-    conv4FromEcoToNative((unsigned char *) &relocRecord.ref);
-    conv4FromEcoToNative((unsigned char *) &relocRecord.add);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.loc);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.seg);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.typ);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.ref);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.add);
 
     if (fwrite(&relocRecord, sizeof(RelocRecord), 1, outputFile) != 1) {
         error("cannot write loader relocation to file '%s'", outputPath);
