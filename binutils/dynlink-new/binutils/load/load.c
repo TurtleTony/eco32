@@ -7,6 +7,8 @@
 
 
 unsigned char *memory;
+unsigned char *freeMemory;
+
 char *libraryPath = DEFAULT_LIB_PATH;
 
 int main(int argc, char *argv[]) {
@@ -88,6 +90,7 @@ int main(int argc, char *argv[]) {
     unsigned int memorySizeBytes = memorySizeMB << 20;
 
     memory = safeAlloc(memorySizeBytes);
+    freeMemory = memory;
     for (int i = 0; i < memorySizeBytes; i++) {
         memory[i] = rand();
     }
@@ -153,11 +156,42 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
     debugPrintf("    Loading '%d' segments from link unit '%s'", eofHeader.nsegs, name);
 #endif
     SegmentRecord segmentRecord;
+    unsigned char *dataPointer;
+
+    unsigned int lowestAddress = -1;
+
     for (int i = 0; i < eofHeader.nsegs; i++) {
         parseSegment(&segmentRecord, eofHeader.osegs, i, inputFile, inputPath, strs);
 
-        if (segmentRecord.attr & SEG_ATTR_A){
+        if (segmentRecord.attr & SEG_ATTR_A) {
             // Allocate memory
+            if (lowestAddress == -1) {
+                /* Because programs might not be linked at address 0x0 we take the base address of the first segment
+                 * (which has to be the lowest) and subtract that from all other address calculations in that link unit.
+                 * This way all address calculations are moved down to zero, allowing for easier management */
+                lowestAddress = segmentRecord.addr;
+#ifdef DEBUG
+                debugPrintf("   Set lowest linked address to 0x%08X", lowestAddress);
+#endif
+            }
+            /* This is used to easily access the correct place in the virtual memory */
+            dataPointer = freeMemory + (segmentRecord.addr - lowestAddress);
+            freeMemory = dataPointer + segmentRecord.size;
+#ifdef DEBUG
+            debugPrintf("      Setting dataPointer for segment '%s' to 0x%08X", strs + segmentRecord.name, dataPointer);
+#endif
+            if (segmentRecord.attr & SEG_ATTR_P) {
+                if (fseek(inputFile, eofHeader.odata + segmentRecord.offs, SEEK_SET) < 0) {
+                    error("cannot seek to data of segment '%s' in file '%s'",
+                          strs + segmentRecord.name, inputPath);
+                }
+                if (fread(dataPointer, segmentRecord.size, 1, inputFile) != 1) {
+                    error("cannot read data of segment '%s' in file '%s'",
+                          strs + segmentRecord.name, inputPath);
+                }
+            } else {
+                memset(dataPointer, 0, segmentRecord.size);
+            }
         }
 
     }
