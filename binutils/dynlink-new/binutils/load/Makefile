@@ -9,7 +9,7 @@ CFLAGS = -g -Wall -I../include -DDEBUG
 LDFLAGS = -g
 LDLIBS = -lm
 
-SRCS = ecoEndian.c queue.c load.c
+SRCS = ecoEndian.c queue.c globalSymbolTable.c load.c
 OBJS = $(patsubst %.c,%.o,$(SRCS))
 BIN = load
 

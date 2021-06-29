@@ -16,6 +16,7 @@
 #include "eof.h"
 #include "ecoEndian.h"
 #include "queue.h"
+#include "globalSymbolTable.h"
 
 #define MAX_MEMSIZE		    512	    /* maximum memory size in MB */
 #define DEFAULT_MEMSIZE		4	    /* default memory size in MB */
@@ -30,6 +31,7 @@ typedef struct linkUnit {
     unsigned int virtualStartAddress;
     struct linkUnit *next;
 } LinkUnit;
+
 
 extern unsigned char *memory;
 
