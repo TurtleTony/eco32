@@ -198,6 +198,14 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
             }
         }
     }
+
+    // TODO: parse symbols into global symbol table
+
+    // Page align freeMemory so that next linkUnit begins on a new page in memory
+#ifdef DEBUG
+    debugPrintf("    Page aligning freeMemory offset from '0x%08X' to 0x%08X", freeMemory - memory, PAGE_ALIGN(freeMemory - memory));
+#endif
+    freeMemory = memory + PAGE_ALIGN(freeMemory - memory);
 }
 
 
