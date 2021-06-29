@@ -100,6 +100,12 @@ int main(int argc, char *argv[]) {
         memory[i] = rand();
     }
 
+#ifdef DEBUG
+    debugPrintf("Initializing hash tables");
+#endif
+    // Initialize gst hash table
+    initGst();
+
     loadExecutable(execFileName, ldOff); // This in-turn loads library dependencies recursively
     // TOOD: Execute relocations
 
