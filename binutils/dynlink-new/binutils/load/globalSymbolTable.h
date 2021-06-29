@@ -19,7 +19,7 @@ typedef struct symbol {
 KHASH_MAP_INIT_STR(globalSymbolTable, Symbol *);
 
 void initGst(void);
-void putSymbolIntoGst(Symbol *symbol, unsigned int symbolNumber);
+void putSymbolIntoGst(Symbol *symbol);
 Symbol *getSymbolFromGst(char *symbol);
 void checkUndefinedSymbols(void);
 void resolveSymbolValues(void);

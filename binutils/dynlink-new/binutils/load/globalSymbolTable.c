@@ -12,7 +12,7 @@ void initGst(void) {
 }
 
 
-void putSymbolIntoGst(Symbol *symbol, unsigned int symbolNumber) {
+void putSymbolIntoGst(Symbol *symbol) {
 #ifdef DEBUG
     debugPrintf("      Putting symbol '%s' into GST", symbol->name);
 #endif

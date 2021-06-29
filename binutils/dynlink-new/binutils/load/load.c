@@ -210,7 +210,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
         }
     }
 
-    // TODO: parse symbols into global symbol table
+    parseSymbols(eofHeader.osyms, eofHeader.nsyms, inputFile, inputPath, strs);
 
     // Page align freeMemory so that next linkUnit begins on a new page in memory
 #ifdef DEBUG
@@ -306,6 +306,37 @@ void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int
         showSegmentAttr(segmentRecord->attr, attr);
         debugPrintf("        %s size: 0x%08X, attr: [%s]", strs + segmentRecord->name, segmentRecord->size, attr);
 #endif
+}
+
+void parseSymbols(unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath, char *strs) {
+    Symbol *moduleSymbol;
+    SymbolRecord symbolRecord;
+
+    if (fseek(inputFile, osyms, SEEK_SET) != 0) {
+        error("cannot seek symbol table in input file '%s'", inputPath);
+    }
+
+#ifdef DEBUG
+    debugPrintf("    Parsing %d symbols", nsyms);
+#endif
+    for (int i = 0; i < nsyms; i++) {
+        if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
+            error("cannot read symbol %d in input file '%s'", i, inputPath);
+        }
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.name);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.val);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.seg);
+        conv4FromEcoToNative((unsigned char *) &symbolRecord.attr);
+
+        moduleSymbol = safeAlloc(sizeof(Symbol));
+        moduleSymbol->name = strs + symbolRecord.name;
+        moduleSymbol->val = symbolRecord.val;
+        moduleSymbol->seg = symbolRecord.seg;
+        moduleSymbol->attr = symbolRecord.attr;
+
+        // Add symbol into link-unit shared table
+        putSymbolIntoGst(moduleSymbol);
+    }
 }
 
 
