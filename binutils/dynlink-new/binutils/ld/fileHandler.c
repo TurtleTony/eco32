@@ -715,7 +715,11 @@ void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
         symbolRecord.name = entry->nameOffs;
         symbolRecord.val = entry->val;
         symbolRecord.seg = entry->seg;
-        symbolRecord.attr = entry->attr;
+        if (entry->attr & SYM_ATTR_X) {
+            symbolRecord.attr = SYM_ATTR_U;
+        } else {
+            symbolRecord.attr = entry->attr;
+        }
 
         conv4FromNativeToEco((unsigned char *) &symbolRecord.name);
         conv4FromNativeToEco((unsigned char *) &symbolRecord.val);
