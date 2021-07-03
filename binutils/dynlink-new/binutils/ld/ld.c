@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     };
 
     // Get-opt keeps this easily expandable for the future
-    while ((c = getopt_long_only(argc, argv, "dc:s:e:o:m:l?", long_options, &option_index)) != -1) {
+    while ((c = getopt_long_only(argc, argv, "dc:s:e:o:m:?", long_options, &option_index)) != -1) {
 #ifdef DEBUG
         if (c == 0) {
             // flag option
@@ -75,9 +75,6 @@ int main(int argc, char *argv[]) {
                 break;
             case 'e':
                 endSymbol = optarg;
-                break;
-            case 'l':
-                createLibrary = 1;
                 break;
             case '?':
                 printUsage(argv[0]);
@@ -198,7 +195,8 @@ void printUsage(char *arg0) {
     fprintf(stderr, "         [-e <symbol>]    set bss end symbol\n");
     fprintf(stderr, "         [-o <outfile>]   set output file name\n");
     fprintf(stderr, "         [-m <mapfile>]   set map file name\n");
-    fprintf(stderr, "         [-l]             create a library file\n");
+    fprintf(stderr, "         [-shared]        create a library file\n");
+    fprintf(stderr, "         [-pic]           create a pic object\n");
     fprintf(stderr, "         <infile> ...     input file names\n");
 }
 
