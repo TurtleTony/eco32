@@ -45,6 +45,7 @@ typedef struct symbol {
     unsigned int attr;		/* symbol attributes */
     /* output variables */
     unsigned int nameOffs; /* name offset in string space (for generating library symbol table) */
+    int isReferenced;   /* Flag if the symbol is referenced by a relocation */
 } Symbol;
 
 typedef struct reloc {

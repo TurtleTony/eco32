@@ -40,7 +40,9 @@ void relocate(Segment *gotSegment) {
             // What to relocate
             if (reloc->typ & RELOC_SYM) {
                 // Symbol relocation
-                refAddress = module->syms[reloc->ref]->val;
+                Symbol *symbol = module->syms[reloc->ref];
+                symbol->isReferenced = 1;
+                refAddress = symbol->val;
                 relocSymType = "SYM";
                 relocSymRef = module->syms[reloc->ref]->name;
             } else if ((reloc->typ & ~RELOC_SYM) == RELOC_GA_H16

@@ -713,6 +713,10 @@ void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
     Symbol *entry;
     SymbolRecord symbolRecord;
     kh_foreach_value(getGst(), entry, {
+        if (!entry->isReferenced && (entry->attr & SYM_ATTR_X)) {
+            continue;
+        }
+
         symbolRecord.name = entry->nameOffs;
         symbolRecord.val = entry->val;
         symbolRecord.seg = entry->seg;
