@@ -9,9 +9,11 @@
 Reloc *listHead = NULL;
 
 unsigned char *memory;
-unsigned char *freeMemory;
 
 char *libraryPath = DEFAULT_LIB_PATH;
+
+unsigned int lowestAddress = -1; /* First virtual memory address */
+unsigned int highestAddress = -1; /* Highest used memory address */
 
 int main(int argc, char *argv[]) {
     unsigned int ldOff = 0;
@@ -95,7 +97,6 @@ int main(int argc, char *argv[]) {
     unsigned int memorySizeBytes = memorySizeMB << 20;
 
     memory = safeAlloc(memorySizeBytes);
-    freeMemory = memory;
     for (int i = 0; i < memorySizeBytes; i++) {
         memory[i] = rand();
     }
@@ -115,9 +116,6 @@ int main(int argc, char *argv[]) {
 
     while(reloc != NULL) {
         unsigned char *dataPointer = memory + reloc->loc;
-#ifdef DEBUG
-        debugPrintf("  Setting dataPointer for relocation to 0x%08X", dataPointer);
-#endif
 #ifdef DEBUG
         debugPrintf("  Relocating @ 0x%08X to 0x%08X",
                         reloc->loc, reloc->symbol->val);
@@ -150,9 +148,9 @@ void loadExecutable(char *execFileName, unsigned int ldOff) {
     char *libName;
     while((libName = dequeue()) != NULL) {
 #ifdef DEBUG
-        debugPrintf("  Dequeueing library '%s'", libName);
+        debugPrintf("  Dequeueing library '%s' with page aligned offset 0x%08X", libName, PAGE_ALIGN(highestAddress));
 #endif
-        loadLibrary(libName, ldOff);
+        loadLibrary(libName, PAGE_ALIGN(highestAddress));
     }
 
     fclose(execFile);
@@ -163,7 +161,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
     debugPrintf("  Loading link unit '%s' from file '%s'", name, inputPath);
 #endif
     LinkUnit *linkUnit = newLinkUnit(name);
-    linkUnit->virtualStartAddress = freeMemory - memory;
+    linkUnit->virtualStartAddress = ldOff;
 
     EofHeader eofHeader;
     parseEofHeader(&eofHeader, expectedMagic, inputFile, inputPath);
@@ -194,8 +192,6 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
     RelocRecord relocRecord;
     unsigned char *dataPointer;
 
-    unsigned int lowestAddress = -1;
-
     for (int i = 0; i < eofHeader.nsegs; i++) {
         parseSegment(&segmentRecord, eofHeader.osegs, i, inputFile, inputPath, strs);
 
@@ -205,14 +201,14 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
                 /* Because programs might not be linked at address 0x0 we take the base address of the first segment
                  * (which has to be the lowest) and subtract that from all other address calculations in that link unit.
                  * This way all address calculations are moved down to zero, allowing for easier management */
-                lowestAddress = segmentRecord.addr;
+                lowestAddress = segmentRecord.addr + ldOff;
 #ifdef DEBUG
                 debugPrintf("    Setting lowest linked address to 0x%08X", lowestAddress);
 #endif
             }
             /* This is used to easily access the correct place in the virtual memory */
-            dataPointer = freeMemory + (segmentRecord.addr - lowestAddress);
-            freeMemory = dataPointer + segmentRecord.size;
+            dataPointer = memory + (segmentRecord.addr + ldOff - lowestAddress);
+            highestAddress = segmentRecord.addr + ldOff + segmentRecord.size;
 #ifdef DEBUG
             debugPrintf("      Setting dataPointer for segment '%s' to 0x%08X", strs + segmentRecord.name, dataPointer);
 #endif
@@ -246,13 +242,9 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
 #endif
             dataPointer = memory + linkUnit->virtualStartAddress + relocRecord.loc - lowestAddress;
 #ifdef DEBUG
-            debugPrintf("        Setting dataPointer for relocation to 0x%08X", dataPointer);
+            debugPrintf("        @ 0x%08X --> + 0x%08X", linkUnit->virtualStartAddress + relocRecord.loc, linkUnit->virtualStartAddress + ldOff);
 #endif
             uint32_t mem = read4FromEco(dataPointer);
-#ifdef DEBUG
-            debugPrintf("        Increasing word 0x%08X by 0x%08X to 0x%08X",
-                        mem, linkUnit->virtualStartAddress + ldOff, mem + linkUnit->virtualStartAddress + ldOff);
-#endif
             mem += (linkUnit->virtualStartAddress + ldOff);
             write4ToEco(dataPointer, mem);
         } else if (relocRecord.typ & RELOC_W32) {
@@ -266,12 +258,6 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
             error("unhandled relocation type '%d'", relocRecord.typ);
         }
     }
-
-    // Page align freeMemory so that next linkUnit begins on a new page in memory
-#ifdef DEBUG
-    debugPrintf("    Page aligning freeMemory offset from '0x%08X' to 0x%08X", freeMemory - memory, PAGE_ALIGN(freeMemory - memory));
-#endif
-    freeMemory = memory + PAGE_ALIGN(freeMemory - memory);
 }
 
 
@@ -459,7 +445,7 @@ void writeBinary(char *fileName) {
         error("cannot open binary file '%s'", fileName);
     }
 
-    size = freeMemory - memory;
+    size = highestAddress - lowestAddress;
     if (size) {
 #ifdef DEBUG
         debugPrintf("  with size %d", size);
