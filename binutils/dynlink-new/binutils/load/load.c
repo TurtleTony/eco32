@@ -304,7 +304,7 @@ void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int
 #ifdef DEBUG
         char attr[10];
         showSegmentAttr(segmentRecord->attr, attr);
-        debugPrintf("        %s size: 0x%08X, attr: [%s]", strs + segmentRecord->name, segmentRecord->size, attr);
+        debugPrintf("        %s @ 0x%08X, size: 0x%08X, attr: [%s]", strs + segmentRecord->name, segmentRecord->addr, segmentRecord->size, attr);
 #endif
 }
 
