@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
     loadExecutable(execFileName, ldOff); // This in-turn loads library dependencies recursively
 
 #ifdef DEBUG
-    debugPrintf("Handling W32 relocations");
+    debugPrintf("Handling postponed relocations");
 #endif
     Reloc *reloc = listHead;
 
@@ -223,7 +223,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
 
             char attr[10];
             showSegmentAttr(segmentRecord.attr, attr);
-            debugPrintf("        %s @ 0x%08X, size: 0x%08X, attr: [%s]",
+            debugPrintf("      %s @ 0x%08X, size: 0x%08X, attr: [%s]",
                         strs + segmentRecord.name, dataPointer - memory, segmentRecord.size, attr);
 #endif
             if (segmentRecord.attr & SEG_ATTR_P) {
@@ -253,7 +253,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
         if (relocRecord.typ & RELOC_ER_W32) {
             dataPointer = memory + ldOff + relocRecord.loc - lowestAddress;
 #ifdef DEBUG
-            debugPrintf("        0x%08X --> + 0x%08X", dataPointer - memory, ldOff);
+            debugPrintf("      0x%08X --> + 0x%08X", dataPointer - memory, ldOff);
 #endif
             uint32_t mem = read4FromEco(dataPointer);
             mem += ldOff;
@@ -263,7 +263,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
             reloc->loc = ldOff + relocRecord.loc - lowestAddress;
             reloc->symbol = linkUnit->symbols[relocRecord.ref];
 #ifdef DEBUG
-            debugPrintf("      Postpone: 0x%08X --> %s", reloc->loc, reloc->symbol->name);
+            debugPrintf("      0x%08X --> %s -- postponed", reloc->loc, reloc->symbol->name);
 #endif
         } else {
             error("unhandled relocation type '%d'", relocRecord.typ);
