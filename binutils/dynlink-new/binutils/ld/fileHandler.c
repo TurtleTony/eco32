@@ -770,6 +770,9 @@ void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *
 
 
 void writeW32Relocation(unsigned int loc, Symbol *symbol, EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
+#ifdef DEBUG
+    debugPrintf("  Writing W32 relocation for extern symbol '%s' @ 0x%08X", symbol->name, loc);
+#endif
     RelocRecord relocRecord;
     relocRecord.loc = loc;
     relocRecord.seg = -1;
@@ -792,6 +795,9 @@ void writeW32Relocation(unsigned int loc, Symbol *symbol, EofHeader *outFileHead
 
 
 void writeERW32Relocation(unsigned int loc, EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
+#ifdef DEBUG
+    debugPrintf("  Writing ER_W32 relocation @ 0x%08X", loc);
+#endif
     RelocRecord relocRecord;
     relocRecord.loc = loc;
     relocRecord.seg = -1;
