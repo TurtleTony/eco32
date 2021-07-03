@@ -385,6 +385,7 @@ void printUsage(char *myself) {
     printf("valid options are:\n");
     printf("    -l <n>         load with n bytes offset\n");
     printf("    -m <n>         set maximum memory size to <n> MB\n");
+    printf("    -d <n>         path to search .dso library files\n");
     exit(1);
 }
 
