@@ -717,6 +717,8 @@ void writeSymbols(EofHeader *outFileHeader, unsigned int *outFileOffset, FILE *o
             continue;
         }
 
+        entry->outputNumber = outFileHeader->nsyms;
+
         symbolRecord.name = entry->nameOffs;
         symbolRecord.val = entry->val;
         symbolRecord.seg = entry->seg;
@@ -764,6 +766,28 @@ void writeSegmentsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *
         outFileHeader->nsegs++;
         totalSeg = totalSeg->next;
     }
+}
+
+
+void writeW32Relocation(unsigned int loc, Symbol *symbol, EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
+    RelocRecord relocRecord;
+    relocRecord.loc = loc;
+    relocRecord.seg = -1;
+    relocRecord.typ = RELOC_W32 | RELOC_SYM;
+    relocRecord.ref = symbol->outputNumber;
+    relocRecord.add = 0;
+
+    conv4FromNativeToEco((unsigned char *) &relocRecord.loc);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.seg);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.typ);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.ref);
+    conv4FromNativeToEco((unsigned char *) &relocRecord.add);
+
+    if (fwrite(&relocRecord, sizeof(RelocRecord), 1, outputFile) != 1) {
+        error("cannot write loader relocation to file '%s'", outputPath);
+    }
+
+    outFileHeader->nrels++;
 }
 
 
