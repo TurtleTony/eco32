@@ -37,10 +37,10 @@ TotalSegment *newTotal(char *name, unsigned int attr) {
     TotalSegment *total = safeAlloc(sizeof(TotalSegment));
 
     total->name = name;
-    total->nameOffs = 1;
-    total->dataOffs = 2;
-    total->addr = 3;
-    total->size = 4;
+    total->nameOffs = 0;
+    total->dataOffs = 0;
+    total->addr = 0;
+    total->size = 0;
     total->attr = attr;
     total->firstPart = NULL;
     total->lastPart = NULL;
