@@ -84,11 +84,15 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (createLibrary && !picMode) {
+    if (createLibrary) {
+        if (!picMode) {
 #ifdef DEBUG
-        debugPrintf("Force -pic when -shared is set");
+            debugPrintf("Force -pic when -shared is set");
 #endif
-        picMode = 1;
+            picMode = 1;
+        }
+        // Default codebase to 0 for libraries
+        codeBaseAddress = 0;
     }
     int fileCount = argc - optind;
     if (fileCount == 0) {
