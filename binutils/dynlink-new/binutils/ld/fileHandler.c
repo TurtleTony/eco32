@@ -826,6 +826,9 @@ void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned in
     khint64_t gotEntry;
     unsigned int gotOffset;
 
+#ifdef DEBUG
+    debugPrintf("  Creating relocations for %d got entries", gotSize() / 4);
+#endif
     kh_foreach(getGot(), gotEntry, gotOffset, {
         Symbol *gotSymbol = (Symbol *) gotEntry;
 
@@ -836,6 +839,9 @@ void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned in
         }
     });
 
+#ifdef DEBUG
+    debugPrintf("  Creating relocations for %d W32 entries", w32Count);
+#endif
     for (int i = 0; i < w32Count; i ++) {
         LoadTimeW32 loadTimeW32 = loadTimeW32s[i];
         if (loadTimeW32.sym && (loadTimeW32.entry.symbol->attr & SYM_ATTR_X)) {
