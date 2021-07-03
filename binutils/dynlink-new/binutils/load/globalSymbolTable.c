@@ -71,12 +71,3 @@ void checkUndefinedSymbols(void) {
         error("%d undefined symbol(s) in gst", undefined);
     }
 }
-
-
-void resolveSymbolValues(void) {
-    Symbol *entry;
-
-    kh_foreach_value(gst, entry, {
-        // TODO: resolve!
-    });
-}

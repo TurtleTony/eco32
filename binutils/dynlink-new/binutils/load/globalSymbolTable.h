@@ -22,6 +22,5 @@ void initGst(void);
 void putSymbolIntoGst(Symbol *symbol);
 Symbol *getSymbolFromGst(char *symbol);
 void checkUndefinedSymbols(void);
-void resolveSymbolValues(void);
 
 #endif //ECO32_GLOBALSYMBOLTABLE_H

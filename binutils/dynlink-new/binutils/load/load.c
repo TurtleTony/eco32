@@ -210,7 +210,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
         }
     }
 
-    parseSymbols(eofHeader.osyms, eofHeader.nsyms, inputFile, inputPath, strs);
+    parseSymbols(linkUnit, eofHeader.osyms, eofHeader.nsyms, inputFile, inputPath, strs);
 
     // Page align freeMemory so that next linkUnit begins on a new page in memory
 #ifdef DEBUG
@@ -308,7 +308,7 @@ void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int
 #endif
 }
 
-void parseSymbols(unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath, char *strs) {
+void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath, char *strs) {
     Symbol *moduleSymbol;
     SymbolRecord symbolRecord;
 
@@ -330,7 +330,7 @@ void parseSymbols(unsigned int osyms, unsigned int nsyms, FILE *inputFile, char 
 
         moduleSymbol = safeAlloc(sizeof(Symbol));
         moduleSymbol->name = strs + symbolRecord.name;
-        moduleSymbol->val = symbolRecord.val;
+        moduleSymbol->val = symbolRecord.seg == -1 ? symbolRecord.val : (linkUnit->virtualStartAddress + symbolRecord.val);
         moduleSymbol->seg = symbolRecord.seg;
         moduleSymbol->attr = symbolRecord.attr;
 
