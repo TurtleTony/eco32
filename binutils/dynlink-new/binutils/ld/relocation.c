@@ -11,8 +11,8 @@ int w32Counter = 0;
 void relocate(Segment *gotSegment) {
     if (picMode) {
 #ifdef DEBUG
-        debugPrintf("  Creating an array to store w32 virtual addresses with size %d",
-                    sizeof(unsigned int) * w32Count);
+        debugPrintf("  Creating an array to store w32 relocation information with size %d",
+                    sizeof(LoadTimeW32) * w32Count);
 #endif
         // Create array to store w32 relocations for creating ER_W32 relocations later
         loadTimeW32s = safeAlloc(sizeof(LoadTimeW32) * w32Count);
