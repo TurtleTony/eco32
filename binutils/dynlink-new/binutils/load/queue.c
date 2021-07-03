@@ -32,7 +32,7 @@ void enqueue(char *entry) {
     while (scanner < end) {
         if (strcmp(*(scanner), entry) == 0) {
 #ifdef DEBUG
-      debugPrintf("      Skipping duplicate entry '%s'", *scanner);
+      debugPrintf("      - '%s' skipped", *scanner);
 #endif
             return;
         }
@@ -40,7 +40,7 @@ void enqueue(char *entry) {
     }
 
 #ifdef DEBUG
-    debugPrintf("      Adding library '%s' to queue", entry);
+    debugPrintf("      - '%s'", entry);
 #endif
     *(end++) = entry;
 }

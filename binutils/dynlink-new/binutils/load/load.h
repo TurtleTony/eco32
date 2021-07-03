@@ -30,7 +30,6 @@ extern unsigned char *memory;
 typedef struct linkUnit {
     char *name;
     char *strs;
-    unsigned int virtualStartAddress;
     struct symbol **symbols;
     struct linkUnit *next;
 } LinkUnit;
@@ -49,7 +48,8 @@ void loadLibrary(char *name, unsigned int ldOff);
 void parseEofHeader(EofHeader *hdr, unsigned int expectedMagic, FILE *inputFile, char *inputPath);
 void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
 void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath, char *strs);
-void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath, char *strs);
+void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath,
+                  char *strs, unsigned int ldOff);
 void parseRelocation(RelocRecord *relocRecord, unsigned int orels, unsigned int relno, FILE *inputFile, char *inputPath);
 
 LinkUnit *newLinkUnit(char *name);

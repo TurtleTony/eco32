@@ -14,7 +14,7 @@ void initGst(void) {
 
 Symbol *putSymbolIntoGst(Symbol *symbol) {
 #ifdef DEBUG
-    debugPrintf("      Putting symbol '%s' into GST", symbol->name);
+    debugPrintf("      - '%s'", symbol->name);
 #endif
     int ret;
     khiter_t k;

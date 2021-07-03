@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
     while(reloc != NULL) {
         unsigned char *dataPointer = memory + reloc->loc;
 #ifdef DEBUG
-        debugPrintf("  Relocating @ 0x%08X to 0x%08X",
+        debugPrintf("  0x%08X --> 0x%08X",
                         reloc->loc, reloc->symbol->val);
 #endif
         write4ToEco(dataPointer, reloc->symbol->val);
@@ -156,12 +156,21 @@ void loadExecutable(char *execFileName, unsigned int ldOff) {
     fclose(execFile);
 }
 
+
+#ifdef DEBUG
+void showSegmentAttr(unsigned int attr, char *res) {
+    res[0] = (attr & SEG_ATTR_A) ? 'A' : '-';
+    res[1] = (attr & SEG_ATTR_P) ? 'P' : '-';
+    res[2] = (attr & SEG_ATTR_W) ? 'W' : '-';
+    res[3] = (attr & SEG_ATTR_X) ? 'X' : '-';
+    res[4] = '\0';
+}
+#endif
 void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char *inputPath, unsigned int ldOff) {
 #ifdef DEBUG
-    debugPrintf("  Loading link unit '%s' from file '%s'", name, inputPath);
+    debugPrintf("  Loading link unit '%s' from file '%s' @ 0x%08X", name, inputPath, ldOff);
 #endif
     LinkUnit *linkUnit = newLinkUnit(name);
-    linkUnit->virtualStartAddress = ldOff;
 
     EofHeader eofHeader;
     parseEofHeader(&eofHeader, expectedMagic, inputFile, inputPath);
@@ -209,8 +218,13 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
             /* This is used to easily access the correct place in the virtual memory */
             dataPointer = memory + (segmentRecord.addr + ldOff - lowestAddress);
             highestAddress = segmentRecord.addr + ldOff + segmentRecord.size;
+
 #ifdef DEBUG
-            debugPrintf("      Setting dataPointer for segment '%s' to 0x%08X", strs + segmentRecord.name, dataPointer);
+
+            char attr[10];
+            showSegmentAttr(segmentRecord.attr, attr);
+            debugPrintf("        %s @ 0x%08X, size: 0x%08X, attr: [%s]",
+                        strs + segmentRecord.name, dataPointer - memory, segmentRecord.size, attr);
 #endif
             if (segmentRecord.attr & SEG_ATTR_P) {
                 if (fseek(inputFile, eofHeader.odata + segmentRecord.offs, SEEK_SET) < 0) {
@@ -227,7 +241,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
         }
     }
 
-    parseSymbols(linkUnit, eofHeader.osyms, eofHeader.nsyms, inputFile, inputPath, strs);
+    parseSymbols(linkUnit, eofHeader.osyms, eofHeader.nsyms, inputFile, inputPath, strs, ldOff);
 
 #ifdef DEBUG
     debugPrintf("    Parsing %d relocations", eofHeader.nrels);
@@ -237,23 +251,20 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
         parseRelocation(&relocRecord, eofHeader.orels, i, inputFile, inputPath);
 
         if (relocRecord.typ & RELOC_ER_W32) {
+            dataPointer = memory + ldOff + relocRecord.loc - lowestAddress;
 #ifdef DEBUG
-            debugPrintf("      Handling relocation %d", i);
-#endif
-            dataPointer = memory + linkUnit->virtualStartAddress + relocRecord.loc - lowestAddress;
-#ifdef DEBUG
-            debugPrintf("        @ 0x%08X --> + 0x%08X", linkUnit->virtualStartAddress + relocRecord.loc, linkUnit->virtualStartAddress + ldOff);
+            debugPrintf("        0x%08X --> + 0x%08X", dataPointer - memory, ldOff);
 #endif
             uint32_t mem = read4FromEco(dataPointer);
-            mem += (linkUnit->virtualStartAddress + ldOff);
+            mem += ldOff;
             write4ToEco(dataPointer, mem);
         } else if (relocRecord.typ & RELOC_W32) {
-#ifdef DEBUG
-            debugPrintf("      Saving relocation %d", i);
-#endif
             Reloc *reloc = newReloc();
-            reloc->loc = linkUnit->virtualStartAddress + relocRecord.loc - lowestAddress;
+            reloc->loc = ldOff + relocRecord.loc - lowestAddress;
             reloc->symbol = linkUnit->symbols[relocRecord.ref];
+#ifdef DEBUG
+            debugPrintf("      Postpone: 0x%08X --> %s", reloc->loc, reloc->symbol->name);
+#endif
         } else {
             error("unhandled relocation type '%d'", relocRecord.typ);
         }
@@ -316,24 +327,12 @@ void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inp
     }
 }
 
-#ifdef DEBUG
-void showSegmentAttr(unsigned int attr, char *res) {
-    res[0] = (attr & SEG_ATTR_A) ? 'A' : '-';
-    res[1] = (attr & SEG_ATTR_P) ? 'P' : '-';
-    res[2] = (attr & SEG_ATTR_W) ? 'W' : '-';
-    res[3] = (attr & SEG_ATTR_X) ? 'X' : '-';
-    res[4] = '\0';
-}
-#endif
 
 void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int segno, FILE *inputFile, char *inputPath, char *strs) {
     if (fseek(inputFile, osegs + segno * sizeof(SegmentRecord), SEEK_SET) != 0) {
         error("cannot seek segment %d in input file '%s'", segno, inputPath);
     }
 
-#ifdef DEBUG
-    debugPrintf("      Parsing segment '%d'", segno);
-#endif
     if (fread(segmentRecord, sizeof(SegmentRecord), 1, inputFile) != 1) {
         error("cannot read segment %d in input file '%s'", segno, inputPath);
     }
@@ -342,14 +341,10 @@ void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int
     conv4FromEcoToNative((unsigned char *) &segmentRecord->addr);
     conv4FromEcoToNative((unsigned char *) &segmentRecord->size);
     conv4FromEcoToNative((unsigned char *) &segmentRecord->attr);
-#ifdef DEBUG
-        char attr[10];
-        showSegmentAttr(segmentRecord->attr, attr);
-        debugPrintf("        %s @ 0x%08X, size: 0x%08X, attr: [%s]", strs + segmentRecord->name, segmentRecord->addr, segmentRecord->size, attr);
-#endif
 }
 
-void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath, char *strs) {
+void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath,
+                  char *strs, unsigned int ldOff) {
     Symbol *moduleSymbol;
     SymbolRecord symbolRecord;
 
@@ -371,7 +366,7 @@ void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FI
 
         moduleSymbol = safeAlloc(sizeof(Symbol));
         moduleSymbol->name = strs + symbolRecord.name;
-        moduleSymbol->val = symbolRecord.seg == -1 ? symbolRecord.val : (linkUnit->virtualStartAddress + symbolRecord.val);
+        moduleSymbol->val = symbolRecord.seg == -1 ? symbolRecord.val : (ldOff + symbolRecord.val);
         moduleSymbol->seg = symbolRecord.seg;
         moduleSymbol->attr = symbolRecord.attr;
 
@@ -403,7 +398,6 @@ LinkUnit *newLinkUnit(char *name) {
     linkUnit = safeAlloc(sizeof(LinkUnit));
     linkUnit->name = name;
     linkUnit->strs = NULL;
-    linkUnit->virtualStartAddress = 0;
 
     return linkUnit;
 }
