@@ -817,9 +817,18 @@ void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned in
     outFileHeader->orels = *outFileOffset;
     outFileHeader->nrels = 0;
 
-    for (int i = 0; i < gotSegment->size; i+=4) {
-        writeERW32Relocation(gotSegment->addr + i, outFileHeader, outputFile, outputPath);
-    }
+    khint64_t gotEntry;
+    unsigned int gotOffset;
+
+    kh_foreach(getGot(), gotEntry, gotOffset, {
+        Symbol *gotSymbol = (Symbol *) gotEntry;
+
+        if (gotSymbol->attr & SYM_ATTR_X) {
+            writeW32Relocation(gotSegment->addr + gotOffset, gotSymbol, outFileHeader, outputFile, outputPath);
+        } else {
+            writeERW32Relocation(gotSegment->addr + gotOffset, outFileHeader, outputFile, outputPath);
+        }
+    });
 
     for (int i = 0; i < w32Count; i ++) {
         writeERW32Relocation(w32Addresses[i], outFileHeader, outputFile, outputPath);

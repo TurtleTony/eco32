@@ -16,6 +16,7 @@ void initGot(void);
 void putEntryIntoGot(Symbol *symbol);
 unsigned int getOffsetFromGot(Symbol *symbol);
 unsigned int gotSize(void);
+khash_t(globalOffsetTable) *getGot();
 
 
 #endif //ECO32_GLOBALOFFSETTABLE_H

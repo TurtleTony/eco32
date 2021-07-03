@@ -33,6 +33,12 @@ unsigned int getOffsetFromGot(Symbol *symbol) {
     return kh_value(got, k);
 }
 
+
 unsigned int gotSize() {
     return gotEntries * 4;
+}
+
+
+khash_t(globalOffsetTable) *getGot() {
+    return got;
 }
