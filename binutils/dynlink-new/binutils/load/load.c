@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
         reloc = reloc->next;
     }
 
-//    writeBinary(binFileName);
+    writeBinary(binFileName);
     return 0;
 }
 
@@ -444,6 +444,32 @@ Reloc *newReloc() {
     }
 
     return reloc;
+}
+
+
+void writeBinary(char *fileName) {
+    FILE *binaryFile;
+    unsigned int size;
+
+#ifdef DEBUG
+    debugPrintf("Writing output binary file");
+#endif
+    binaryFile = fopen(fileName, "w");
+    if (binaryFile == NULL) {
+        error("cannot open binary file '%s'", fileName);
+    }
+
+    size = freeMemory - memory;
+    if (size) {
+#ifdef DEBUG
+        debugPrintf("  with size %d", size);
+#endif
+        if (fwrite(memory, 1, size, binaryFile) != size) {
+            error("cannot write to binary file '%s'", fileName);
+        }
+    }
+
+    fclose(binaryFile);
 }
 
 

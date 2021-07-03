@@ -55,6 +55,8 @@ void parseRelocation(RelocRecord *relocRecord, unsigned int orels, unsigned int 
 LinkUnit *newLinkUnit(char *name);
 Reloc *newReloc();
 
+void writeBinary(char *fileName);
+
 char *basename(char *path);
 
 void printUsage(char *arg0);
