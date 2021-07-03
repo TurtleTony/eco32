@@ -108,9 +108,24 @@ int main(int argc, char *argv[]) {
 
     loadExecutable(execFileName, ldOff); // This in-turn loads library dependencies recursively
 
+#ifdef DEBUG
+    debugPrintf("Handling W32 relocations");
+#endif
+    Reloc *reloc = listHead;
 
-    // TOOD: Execute relocations
+    while(reloc != NULL) {
+        unsigned char *dataPointer = memory + reloc->loc;
+#ifdef DEBUG
+        debugPrintf("  Setting dataPointer for relocation to 0x%08X", dataPointer);
+#endif
+#ifdef DEBUG
+        debugPrintf("  Relocating @ 0x%08X to 0x%08X",
+                        reloc->loc, reloc->symbol->val);
+#endif
+        write4ToEco(dataPointer, reloc->symbol->val);
 
+        reloc = reloc->next;
+    }
 
 //    writeBinary(binFileName);
     return 0;
@@ -218,21 +233,38 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
 
     parseSymbols(linkUnit, eofHeader.osyms, eofHeader.nsyms, inputFile, inputPath, strs);
 
+#ifdef DEBUG
+    debugPrintf("    Parsing %d relocations", eofHeader.nrels);
+#endif
     // load relocations
-    parseRelocations(&relocRecord, eofHeader.orels, eofHeader.nrels, inputFile, inputPath);
+    for(int i = 0; i < eofHeader.nrels; i++) {
+        parseRelocation(&relocRecord, eofHeader.orels, i, inputFile, inputPath);
 
-    // handle relocations
-    if (relocRecord.typ & RELOC_ER_W32) {
-        dataPointer = memory + linkUnit->virtualStartAddress + relocRecord.loc;
-        unsigned int mem = read4FromEco(dataPointer);
-        mem += (linkUnit->virtualStartAddress + ldOff);
-        write4ToEco(dataPointer, mem);
-    } else if (relocRecord.typ & RELOC_W32) {
-        Reloc *reloc = newReloc();
-        reloc->loc = relocRecord.loc;
-        reloc->symbol = linkUnit->symbols[relocRecord.ref];
-    } else {
-        error("unhandled relocation type '%d'", relocRecord.typ);
+        if (relocRecord.typ & RELOC_ER_W32) {
+#ifdef DEBUG
+            debugPrintf("      Handling relocation %d", i);
+#endif
+            dataPointer = memory + linkUnit->virtualStartAddress + relocRecord.loc - lowestAddress;
+#ifdef DEBUG
+            debugPrintf("        Setting dataPointer for relocation to 0x%08X", dataPointer);
+#endif
+            uint32_t mem = read4FromEco(dataPointer);
+#ifdef DEBUG
+            debugPrintf("        Increasing word 0x%08X by 0x%08X to 0x%08X",
+                        mem, linkUnit->virtualStartAddress + ldOff, mem + linkUnit->virtualStartAddress + ldOff);
+#endif
+            mem += (linkUnit->virtualStartAddress + ldOff);
+            write4ToEco(dataPointer, mem);
+        } else if (relocRecord.typ & RELOC_W32) {
+#ifdef DEBUG
+            debugPrintf("      Saving relocation %d", i);
+#endif
+            Reloc *reloc = newReloc();
+            reloc->loc = linkUnit->virtualStartAddress + relocRecord.loc - lowestAddress;
+            reloc->symbol = linkUnit->symbols[relocRecord.ref];
+        } else {
+            error("unhandled relocation type '%d'", relocRecord.typ);
+        }
     }
 
     // Page align freeMemory so that next linkUnit begins on a new page in memory
@@ -363,21 +395,19 @@ void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FI
 }
 
 
-void parseRelocations(RelocRecord *relocRecord, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath) {
-    if (fseek(inputFile, orels, SEEK_SET) != 0) {
-        error("cannot seek symbol table in input file '%s'", inputPath);
+void parseRelocation(RelocRecord *relocRecord, unsigned int orels, unsigned int relno, FILE *inputFile, char *inputPath) {
+    if (fseek(inputFile, orels + relno * sizeof(RelocRecord), SEEK_SET) != 0) {
+        error("cannot seek relocation %d in input file '%s'", relno, inputPath);
     }
 
-    for (int i = 0; i < nrels; i++) {
-        if (fread(relocRecord, sizeof(RelocRecord), 1, inputFile) != 1) {
-            error("cannot read relocation %d in input file '%s'", i, inputPath);
-        }
-        conv4FromEcoToNative((unsigned char *) &relocRecord->loc);
-        conv4FromEcoToNative((unsigned char *) &relocRecord->seg);
-        conv4FromEcoToNative((unsigned char *) &relocRecord->typ);
-        conv4FromEcoToNative((unsigned char *) &relocRecord->ref);
-        conv4FromEcoToNative((unsigned char *) &relocRecord->add);
+    if (fread(relocRecord, sizeof(RelocRecord), 1, inputFile) != 1) {
+        error("cannot read relocation %d in input file '%s'", relno, inputPath);
     }
+    conv4FromEcoToNative((unsigned char *) &relocRecord->loc);
+    conv4FromEcoToNative((unsigned char *) &relocRecord->seg);
+    conv4FromEcoToNative((unsigned char *) &relocRecord->typ);
+    conv4FromEcoToNative((unsigned char *) &relocRecord->ref);
+    conv4FromEcoToNative((unsigned char *) &relocRecord->add);
 }
 
 
@@ -412,6 +442,8 @@ Reloc *newReloc() {
             last = last->next;
         }
     }
+
+    return reloc;
 }
 
 

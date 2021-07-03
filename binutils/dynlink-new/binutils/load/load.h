@@ -50,7 +50,7 @@ void parseEofHeader(EofHeader *hdr, unsigned int expectedMagic, FILE *inputFile,
 void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
 void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath, char *strs);
 void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath, char *strs);
-void parseRelocations(RelocRecord *relocRecord, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath);
+void parseRelocation(RelocRecord *relocRecord, unsigned int orels, unsigned int relno, FILE *inputFile, char *inputPath);
 
 LinkUnit *newLinkUnit(char *name);
 Reloc *newReloc();
