@@ -259,6 +259,8 @@ void readObjHeader(EofHeader *objHeader,
   conv4FromEcoToNative((unsigned char *) &objHeader->ostrs);
   conv4FromEcoToNative((unsigned char *) &objHeader->sstrs);
   conv4FromEcoToNative((unsigned char *) &objHeader->entry);
+  conv4FromEcoToNative((unsigned char *) &objHeader->olibs);
+  conv4FromEcoToNative((unsigned char *) &objHeader->nlibs);
   if (objHeader->magic != EOF_R_MAGIC) {
     error("wrong magic number in object file '%s'", objName);
   }

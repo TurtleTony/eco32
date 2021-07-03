@@ -1342,7 +1342,8 @@ void dotSet(unsigned int code, unsigned int xopcode) {
  */
 void dotLdgot(unsigned int code, unsigned int xopcode) {
   if (!genPIC) {
-    error("illegal .ldgot in line %d, cmdline switch -p missing?", lineno);
+    error("illegal .ldgot in line %d, cmdline switch -pic missing?",
+          lineno);
   }
   expect(TOK_REGISTER);
   gotReg = tokenvalNumber;
@@ -2136,6 +2137,8 @@ static void writeFinalHeader(void) {
   rewind(outFile);
   outFileHeader.magic = EOF_R_MAGIC;
   outFileHeader.entry = 0;
+  outFileHeader.olibs = 0;
+  outFileHeader.nlibs = 0;
   conv4FromNativeToEco((unsigned char *) &outFileHeader.magic);
   conv4FromNativeToEco((unsigned char *) &outFileHeader.osegs);
   conv4FromNativeToEco((unsigned char *) &outFileHeader.nsegs);
@@ -2148,6 +2151,8 @@ static void writeFinalHeader(void) {
   conv4FromNativeToEco((unsigned char *) &outFileHeader.ostrs);
   conv4FromNativeToEco((unsigned char *) &outFileHeader.sstrs);
   conv4FromNativeToEco((unsigned char *) &outFileHeader.entry);
+  conv4FromNativeToEco((unsigned char *) &outFileHeader.olibs);
+  conv4FromNativeToEco((unsigned char *) &outFileHeader.nlibs);
   fwrite(&outFileHeader, sizeof(EofHeader), 1, outFile);
   conv4FromEcoToNative((unsigned char *) &outFileHeader.magic);
   conv4FromEcoToNative((unsigned char *) &outFileHeader.osegs);
@@ -2161,6 +2166,8 @@ static void writeFinalHeader(void) {
   conv4FromEcoToNative((unsigned char *) &outFileHeader.ostrs);
   conv4FromEcoToNative((unsigned char *) &outFileHeader.sstrs);
   conv4FromEcoToNative((unsigned char *) &outFileHeader.entry);
+  conv4FromEcoToNative((unsigned char *) &outFileHeader.olibs);
+  conv4FromEcoToNative((unsigned char *) &outFileHeader.nlibs);
 }
 
 
