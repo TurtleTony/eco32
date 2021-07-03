@@ -661,6 +661,9 @@ void writeStringsTotal(EofHeader *outFileHeader, TotalSegment *totalSeg, FILE *o
 void writeStringsSymbols(EofHeader *outFileHeader, FILE *outputFile, char *outputPath) {
     Symbol *entry;
     kh_foreach_value(getGst(), entry, {
+        if (!entry->isReferenced && (entry->attr & SYM_ATTR_X)) {
+            continue;
+        }
         entry->nameOffs = outFileHeader->sstrs;
         unsigned int size = strlen(entry->name) + 1;
 
