@@ -84,6 +84,12 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    if (createLibrary && !picMode) {
+#ifdef DEBUG
+        debugPrintf("Force -pic when -shared is set");
+#endif
+        picMode = 1;
+    }
     int fileCount = argc - optind;
     if (fileCount == 0) {
         // Require at least one infile
