@@ -10,6 +10,17 @@
 #include "fileHandler.h"
 
 
+typedef struct loadTimeW32 {
+    unsigned int loc;   /* where to relocate */
+    int sym;            /* 1 = symbol, 0 = segment */
+    union {
+        Symbol *symbol;
+        Segment *segment;
+    } entry;
+} LoadTimeW32;
+
+extern int w32Count;
+extern LoadTimeW32 *loadTimeW32s;
 void relocate(Segment *gotSegment);
 
 

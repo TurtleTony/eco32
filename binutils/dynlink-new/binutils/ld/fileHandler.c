@@ -837,7 +837,14 @@ void writeRelocations(Segment *gotSegment, EofHeader *outFileHeader, unsigned in
     });
 
     for (int i = 0; i < w32Count; i ++) {
-        writeERW32Relocation(w32Addresses[i], outFileHeader, outputFile, outputPath);
+        LoadTimeW32 loadTimeW32 = loadTimeW32s[i];
+        if (loadTimeW32.sym && (loadTimeW32.entry.symbol->attr & SYM_ATTR_X)) {
+            writeW32Relocation(loadTimeW32.loc, loadTimeW32.entry.symbol, outFileHeader, outputFile, outputPath);
+        } else if (loadTimeW32.sym && !(loadTimeW32.entry.symbol->attr & SYM_ATTR_X)) {
+            writeERW32Relocation(loadTimeW32.loc, outFileHeader, outputFile, outputPath);
+        } else {
+            writeERW32Relocation(loadTimeW32.loc, outFileHeader, outputFile, outputPath);
+        }
     }
 
     *outFileOffset += sizeof(RelocRecord) * outFileHeader->nrels;

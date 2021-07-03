@@ -5,7 +5,7 @@
 #include "relocation.h"
 
 
-int *w32Addresses;
+LoadTimeW32 *loadTimeW32s;
 int w32Counter = 0;
 
 void relocate(Segment *gotSegment) {
@@ -15,7 +15,7 @@ void relocate(Segment *gotSegment) {
                     sizeof(unsigned int) * w32Count);
 #endif
         // Create array to store w32 relocations for creating ER_W32 relocations later
-        w32Addresses = safeAlloc(sizeof(unsigned int) * w32Count);
+        loadTimeW32s = safeAlloc(sizeof(LoadTimeW32) * w32Count);
     }
 
 
@@ -115,7 +115,25 @@ void relocate(Segment *gotSegment) {
                     break;
                 case RELOC_W32:
                     if (picMode) {
-                        w32Addresses[w32Counter++] = relocAddress;
+                        LoadTimeW32 loadTimeW32;
+                        loadTimeW32.loc = relocAddress;
+                        if (reloc->typ & RELOC_SYM) {
+                            loadTimeW32.sym = 1;
+                            loadTimeW32.entry.symbol = module->syms[reloc->ref];
+#ifdef DEBUG
+                            debugPrintf("      planning load-time relocation @ 0x%08X for symbol '%s'",
+                                        loadTimeW32.loc, loadTimeW32.entry.symbol->name);
+#endif
+                        } else {
+                            loadTimeW32.sym = 0;
+                            loadTimeW32.entry.segment = &module->segs[reloc->ref];
+#ifdef DEBUG
+                            debugPrintf("      planning load-time relocation @ 0x%08X for segment '%s'",
+                                        loadTimeW32.loc, loadTimeW32.entry.segment->name);
+#endif
+                        }
+
+                        loadTimeW32s[w32Counter++] = loadTimeW32;
                     }
 
                     mask = 0xFFFFFFFF;

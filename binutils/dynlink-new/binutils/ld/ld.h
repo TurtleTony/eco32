@@ -30,8 +30,6 @@
 #define DEFAULT_END_SYMBOL      "_end"
 
 extern int picMode;
-extern int w32Count;
-extern int *w32Addresses;
 
 /**************************************************************/
 /** Helper methods **/
