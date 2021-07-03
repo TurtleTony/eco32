@@ -25,15 +25,22 @@
 #define PAGE_ALIGN(x)		    (((x) + 0x0FFF) & ~0x0FFF)
 
 
+extern unsigned char *memory;
+
 typedef struct linkUnit {
     char *name;
     char *strs;
     unsigned int virtualStartAddress;
+    struct symbol **symbols;
     struct linkUnit *next;
 } LinkUnit;
 
+typedef struct reloc {
+    unsigned int loc;		/* where to relocate */
+    struct symbol *symbol;         /* Symbol values to be placed @ loc */
+    struct reloc *next;
+} Reloc;
 
-extern unsigned char *memory;
 
 void loadExecutable(char *execFileName, unsigned int ldOff);
 void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char *inputPath, unsigned int ldOff);
@@ -43,8 +50,11 @@ void parseEofHeader(EofHeader *hdr, unsigned int expectedMagic, FILE *inputFile,
 void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inputFile, char *inputPath);
 void parseSegment(SegmentRecord *segmentRecord, unsigned int osegs, unsigned int nsegs, FILE *inputFile, char *inputPath, char *strs);
 void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FILE *inputFile, char *inputPath, char *strs);
+void parseRelocations(RelocRecord *relocRecord, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath);
 
 LinkUnit *newLinkUnit(char *name);
+Reloc *newReloc();
+
 char *basename(char *path);
 
 void printUsage(char *arg0);

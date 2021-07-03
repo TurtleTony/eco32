@@ -6,7 +6,7 @@
 #include "load.h"
 
 
-LinkUnit *listHead = NULL;
+Reloc *listHead = NULL;
 
 unsigned char *memory;
 unsigned char *freeMemory;
@@ -107,7 +107,10 @@ int main(int argc, char *argv[]) {
     initGst();
 
     loadExecutable(execFileName, ldOff); // This in-turn loads library dependencies recursively
+
+
     // TOOD: Execute relocations
+
 
 //    writeBinary(binFileName);
     return 0;
@@ -150,6 +153,8 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
     EofHeader eofHeader;
     parseEofHeader(&eofHeader, expectedMagic, inputFile, inputPath);
 
+    linkUnit->symbols = safeAlloc(sizeof(Symbol *) * eofHeader.nsyms);
+
     char *strs;
 
     parseStrings(&strs, eofHeader.ostrs, eofHeader.sstrs, inputFile, inputPath);
@@ -171,6 +176,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
     debugPrintf("    Loading %d segments from link unit '%s'", eofHeader.nsegs, name);
 #endif
     SegmentRecord segmentRecord;
+    RelocRecord relocRecord;
     unsigned char *dataPointer;
 
     unsigned int lowestAddress = -1;
@@ -211,6 +217,23 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
     }
 
     parseSymbols(linkUnit, eofHeader.osyms, eofHeader.nsyms, inputFile, inputPath, strs);
+
+    // load relocations
+    parseRelocations(&relocRecord, eofHeader.orels, eofHeader.nrels, inputFile, inputPath);
+
+    // handle relocations
+    if (relocRecord.typ & RELOC_ER_W32) {
+        dataPointer = memory + linkUnit->virtualStartAddress + relocRecord.loc;
+        unsigned int mem = read4FromEco(dataPointer);
+        mem += (linkUnit->virtualStartAddress + ldOff);
+        write4ToEco(dataPointer, mem);
+    } else if (relocRecord.typ & RELOC_W32) {
+        Reloc *reloc = newReloc();
+        reloc->loc = relocRecord.loc;
+        reloc->symbol = linkUnit->symbols[relocRecord.ref];
+    } else {
+        error("unhandled relocation type '%d'", relocRecord.typ);
+    }
 
     // Page align freeMemory so that next linkUnit begins on a new page in memory
 #ifdef DEBUG
@@ -335,7 +358,25 @@ void parseSymbols(LinkUnit *linkUnit, unsigned int osyms, unsigned int nsyms, FI
         moduleSymbol->attr = symbolRecord.attr;
 
         // Add symbol into link-unit shared table
-        putSymbolIntoGst(moduleSymbol);
+        linkUnit->symbols[i] = putSymbolIntoGst(moduleSymbol);
+    }
+}
+
+
+void parseRelocations(RelocRecord *relocRecord, unsigned int orels, unsigned int nrels, FILE *inputFile, char *inputPath) {
+    if (fseek(inputFile, orels, SEEK_SET) != 0) {
+        error("cannot seek symbol table in input file '%s'", inputPath);
+    }
+
+    for (int i = 0; i < nrels; i++) {
+        if (fread(relocRecord, sizeof(RelocRecord), 1, inputFile) != 1) {
+            error("cannot read relocation %d in input file '%s'", i, inputPath);
+        }
+        conv4FromEcoToNative((unsigned char *) &relocRecord->loc);
+        conv4FromEcoToNative((unsigned char *) &relocRecord->seg);
+        conv4FromEcoToNative((unsigned char *) &relocRecord->typ);
+        conv4FromEcoToNative((unsigned char *) &relocRecord->ref);
+        conv4FromEcoToNative((unsigned char *) &relocRecord->add);
     }
 }
 
@@ -347,22 +388,30 @@ LinkUnit *newLinkUnit(char *name) {
     linkUnit->name = name;
     linkUnit->strs = NULL;
     linkUnit->virtualStartAddress = 0;
-    linkUnit->next = NULL;
+
+    return linkUnit;
+}
+
+
+Reloc *newReloc() {
+    Reloc *reloc;
+    reloc = safeAlloc(sizeof(Reloc));
+    reloc->loc = 0;
+    reloc->symbol = NULL;
+    reloc->next = NULL;
 
     if (listHead == NULL) {
-        listHead = linkUnit;
+        listHead = reloc;
     } else {
-        LinkUnit *last = listHead;
+        Reloc *last = listHead;
         while (1) {
             if (last->next == NULL) {
-                last->next = linkUnit;
+                last->next = reloc;
                 break;
             }
             last = last->next;
         }
     }
-
-    return linkUnit;
 }
 
 

@@ -12,7 +12,7 @@ void initGst(void) {
 }
 
 
-void putSymbolIntoGst(Symbol *symbol) {
+Symbol *putSymbolIntoGst(Symbol *symbol) {
 #ifdef DEBUG
     debugPrintf("      Putting symbol '%s' into GST", symbol->name);
 #endif
@@ -47,6 +47,8 @@ void putSymbolIntoGst(Symbol *symbol) {
         default:
             error("Error writing symbol %s into gst", symbol->name);
     }
+
+    return kh_value(gst, k);
 }
 
 
