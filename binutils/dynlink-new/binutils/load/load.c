@@ -325,7 +325,7 @@ void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inp
 
     *strs = safeAlloc(sstrs);
 
-    if (fread(*strs, sstrs, 1, inputFile) != 1) {
+    if (sstrs != 0 && fread(*strs, sstrs, 1, inputFile) != 1) {
         error("cannot read string space in input file '%s'", inputPath);
     }
 }
