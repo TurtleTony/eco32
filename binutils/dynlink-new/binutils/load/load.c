@@ -234,7 +234,7 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
                     error("cannot seek to data of segment '%s' in file '%s'",
                           strs + segmentRecord.name, inputPath);
                 }
-                if (fread(dataPointer, 1, segmentRecord.size, inputFile) != segmentRecord.size) {
+                if (segmentRecord.size != 0 && fread(dataPointer, segmentRecord.size, 1, inputFile) != 1) {
                     error("cannot read data of segment '%s' in file '%s'",
                           strs + segmentRecord.name, inputPath);
                 }
