@@ -71,7 +71,7 @@ void readFile(char *inputPath) {
         error("cannot seek magic number in input file '%s'", inputPath);
     }
 
-    if (fread(&magicNumber, 1, sizeof(unsigned int), inputFile) != sizeof(unsigned int)) {
+    if (fread(&magicNumber, sizeof(unsigned int), 1, inputFile) != 1) {
         error("cannot read magic number in input file '%s'", inputPath);
     }
     conv4FromEcoToNative((unsigned char *) &magicNumber);
@@ -208,7 +208,7 @@ void parseArchiveHeader(ArchHeader *hdr, FILE *inputFile, char *inputPath) {
     if (fseek(inputFile, 0, SEEK_SET) != 0) {
         error("cannot seek archive header in input file '%s'", inputPath);
     }
-    if (fread(hdr, 1, sizeof(ArchHeader), inputFile) != sizeof(ArchHeader)) {
+    if (fread(hdr, sizeof(ArchHeader), 1, inputFile) != 1) {
         error("cannot read archive header in input file '%s'", inputPath);
     }
     conv4FromEcoToNative((unsigned char *) &hdr->magic);
@@ -231,7 +231,7 @@ char *parseArchiveStrings(unsigned int ostrs, unsigned int sstrs, FILE *inputFil
 
     char *strings = safeAlloc(sstrs);
 
-    if (fread(strings, 1, sstrs, inputFile) != sstrs) {
+    if (fread(strings, sstrs, 1, inputFile) != 1) {
         error("cannot read string space in input file '%s'", inputPath);
     }
     return strings;
@@ -246,7 +246,7 @@ ModuleRecord *parseArchiveModules(unsigned int omods, unsigned int nmods, FILE *
     }
 
     for (int i = 0; i < nmods; i++) {
-        if (fread(&moduleRecords[i], 1, sizeof(ModuleRecord), inputFile) != sizeof(ModuleRecord)) {
+        if (fread(&moduleRecords[i], sizeof(ModuleRecord), 1, inputFile) != 1) {
             error("cannot read module %d in input file '%s'", i, inputPath);
         }
         conv4FromEcoToNative((unsigned char *) &moduleRecords[i].name);
@@ -264,7 +264,7 @@ void parseEofHeader(EofHeader *hdr, unsigned int fileOffset, FILE *inputFile, ch
     if (fseek(inputFile, fileOffset, SEEK_SET) != 0) {
         error("cannot seek object file header in input file '%s'", inputPath);
     }
-    if (fread(hdr, 1, sizeof(EofHeader), inputFile) != sizeof(EofHeader)) {
+    if (fread(hdr, sizeof(EofHeader), 1, inputFile) != 1) {
         error("cannot read object file header in input file '%s'", inputPath);
     }
     conv4FromEcoToNative((unsigned char *) &hdr->magic);
@@ -294,7 +294,7 @@ void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inp
 
     module->data = safeAlloc(sdata);
 
-    if (fread(module->data, 1, sdata, inputFile) != sdata) {
+    if (fread(module->data, sdata, 1, inputFile) != 1) {
         error("cannot read data space in input file '%s'", inputPath);
     }
 }
@@ -307,7 +307,7 @@ void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inp
 
     *strs = safeAlloc(sstrs);
 
-    if (fread(*strs, 1, sstrs, inputFile) != sstrs) {
+    if (fread(*strs, sstrs, 1, inputFile) != 1) {
         error("cannot read string space in input file '%s'", inputPath);
     }
 }
@@ -338,7 +338,7 @@ void parseSegments(Module *module, unsigned int osegs, unsigned int nsegs, FILE 
 #endif
     for (int i = 0; i < nsegs; i++) {
         seg = &module->segs[i];
-        if (fread(&segmentRecord, 1, sizeof(SegmentRecord), inputFile) != sizeof(SegmentRecord)) {
+        if (fread(&segmentRecord, sizeof(SegmentRecord), 1, inputFile) != 1) {
             error("cannot read segment %d in input file '%s'", i, inputPath);
         }
         conv4FromEcoToNative((unsigned char *) &segmentRecord.name);
@@ -381,7 +381,7 @@ void parseSymbols(Module *module, unsigned int osyms, unsigned int nsyms, FILE *
     debugPrintf("    Parsing symbols in module '%s'", module->name);
 #endif
     for (int i = 0; i < nsyms; i++) {
-        if (fread(&symbolRecord, 1, sizeof(SymbolRecord), inputFile) != sizeof(SymbolRecord)) {
+        if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
             error("cannot read symbol %d in input file '%s'", i, inputPath);
         }
         conv4FromEcoToNative((unsigned char *) &symbolRecord.name);
@@ -421,7 +421,7 @@ void parseRelocations(Module *module, unsigned int orels, unsigned int nrels, FI
 
     for (int i = 0; i < nrels; i++) {
         reloc = &module->rels[i];
-        if (fread(&relocRecord, 1, sizeof(RelocRecord), inputFile) != sizeof(RelocRecord)) {
+        if (fread(&relocRecord, sizeof(RelocRecord), 1, inputFile) != 1) {
             error("cannot read relocation %d in input file '%s'", i, inputPath);
         }
         conv4FromEcoToNative((unsigned char *) &relocRecord.loc);
@@ -470,7 +470,7 @@ void parseDynamicLibrarySymbols(char *strs, unsigned int osyms, unsigned int nsy
     debugPrintf("    Parsing symbols in library '%s'", inputPath);
 #endif
     for (int i = 0; i < nsyms; i++) {
-        if (fread(&symbolRecord, 1, sizeof(SymbolRecord), inputFile) != sizeof(SymbolRecord)) {
+        if (fread(&symbolRecord, sizeof(SymbolRecord), 1, inputFile) != 1) {
             error("cannot read symbol %d in input file '%s'", i, inputPath);
         }
         conv4FromEcoToNative((unsigned char *) &symbolRecord.name);
