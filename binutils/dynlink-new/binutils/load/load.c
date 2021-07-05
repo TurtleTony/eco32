@@ -120,6 +120,9 @@ int main(int argc, char *argv[]) {
         debugPrintf("  0x%08X --> 0x%08X",
                         reloc->loc, reloc->symbol->val);
 #endif
+        if (reloc->symbol->attr & SYM_ATTR_U) {
+            error("Symbol '%s' wasn't resolved", reloc->symbol->name);
+        }
         write4ToEco(dataPointer, reloc->symbol->val);
 
         reloc = reloc->next;
