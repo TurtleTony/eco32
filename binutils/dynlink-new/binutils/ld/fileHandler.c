@@ -231,7 +231,7 @@ char *parseArchiveStrings(unsigned int ostrs, unsigned int sstrs, FILE *inputFil
 
     char *strings = safeAlloc(sstrs);
 
-    if (fread(strings, sstrs, 1, inputFile) != 1) {
+    if (sstrs != 0 && fread(strings, sstrs, 1, inputFile) != 1) {
         error("cannot read string space in input file '%s'", inputPath);
     }
     return strings;
@@ -294,7 +294,7 @@ void parseData(Module *module, unsigned int odata, unsigned int sdata, FILE *inp
 
     module->data = safeAlloc(sdata);
 
-    if (fread(module->data, sdata, 1, inputFile) != 1) {
+    if (sdata != 0 && fread(module->data, sdata, 1, inputFile) != 1) {
         error("cannot read data space in input file '%s'", inputPath);
     }
 }
@@ -307,7 +307,7 @@ void parseStrings(char **strs, unsigned int ostrs, unsigned int sstrs, FILE *inp
 
     *strs = safeAlloc(sstrs);
 
-    if (fread(*strs, sstrs, 1, inputFile) != 1) {
+    if (strs != 0 && fread(*strs, sstrs, 1, inputFile) != 1) {
         error("cannot read string space in input file '%s'", inputPath);
     }
 }
