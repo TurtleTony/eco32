@@ -1,0 +1,20 @@
+Ergebnis von "diff -r TestDynamicPIC demo"
+------------------------------------------
+
+Only in demo/libdev/biolib: sym.s
+
+diff -r TestDynamicPIC/libdev/biolib/Makefile demo/libdev/biolib/Makefile
+17,18c17,18
+< libbiolib.dso:	biolib.o
+< 		$(CC) $(LDFLAGS) -o libbiolib.dso biolib.o
+---
+> libbiolib.dso:	biolib.o sym.o
+> 		$(CC) $(LDFLAGS) -o libbiolib.dso biolib.o sym.o
+22a23,25
+> sym.o:		sym.s
+> 		$(BUILD)/bin/as -pic -o sym.o sym.s
+> 
+24c27
+< 		rm -f *~ biolib.o libbiolib.dso
+---
+> 		rm -f *~ biolib.o sym.o libbiolib.dso
