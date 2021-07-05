@@ -117,8 +117,8 @@ int main(int argc, char *argv[]) {
     while(reloc != NULL) {
         unsigned char *dataPointer = memory + reloc->loc;
 #ifdef DEBUG
-        debugPrintf("  0x%08X --> 0x%08X",
-                        reloc->loc, reloc->symbol->val);
+        debugPrintf("  0x%08X --> %-16s : 0x%08X",
+                        reloc->loc, reloc->symbol->name, reloc->symbol->val);
 #endif
         if (reloc->symbol->attr & SYM_ATTR_U) {
             error("Symbol '%s' wasn't resolved", reloc->symbol->name);
@@ -223,10 +223,9 @@ void loadLinkUnit(char *name, unsigned int expectedMagic, FILE *inputFile, char 
             highestAddress = segmentRecord.addr + ldOff + segmentRecord.size;
 
 #ifdef DEBUG
-
             char attr[10];
             showSegmentAttr(segmentRecord.attr, attr);
-            debugPrintf("      %s @ 0x%08X, size: 0x%08X, attr: [%s]",
+            debugPrintf("      %-8s @ 0x%08X, size: 0x%08X, attr: [%s]",
                         strs + segmentRecord.name, dataPointer - memory, segmentRecord.size, attr);
 #endif
             if (segmentRecord.attr & SEG_ATTR_P) {

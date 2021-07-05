@@ -14,7 +14,7 @@ void initGst(void) {
 
 Symbol *putSymbolIntoGst(Symbol *symbol) {
 #ifdef DEBUG
-    debugPrintf("      - '%s'", symbol->name);
+    debugPrintf("      - %-16s 0x%08X", symbol->name, symbol->val);
 #endif
     int ret;
     khiter_t k;
